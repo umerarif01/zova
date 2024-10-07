@@ -1,39 +1,26 @@
-type BlogPost = {
-  slug: string;
-  created_at: string;
-};
+import type { MetadataRoute } from "next";
 
-type SitemapEntry = {
-  url: string;
-  lastModified: string;
-  changeFrequency:
-    | "always"
-    | "hourly"
-    | "daily"
-    | "weekly"
-    | "monthly"
-    | "yearly"
-    | "never";
-  priority?: number;
-};
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = process.env.FRONTEND_URL!;
 
-export default async function sitemap(): Promise<SitemapEntry[]> {
-  const baseUrl = "https://starter.rasmic.xyz";
-
-  const staticPages: SitemapEntry[] = [
+  return [
     {
       url: baseUrl,
-      lastModified: new Date().toISOString(),
-      changeFrequency: "monthly",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
       priority: 1,
     },
     {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date().toISOString(),
-      changeFrequency: "weekly",
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/terms-and-conditions`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
   ];
-
-  return [...staticPages];
 }
