@@ -1,1 +1,2 @@
-export const TITLE_TAILWIND_CLASS = "text-2xl sm:text-2xl md:text-3xl lg:text-4xl"
+export const TITLE_TAILWIND_CLASS =
+  "text-3xl sm:text-4xl md:text-5xl lg:text-6xl";

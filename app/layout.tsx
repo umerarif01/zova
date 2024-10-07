@@ -1,39 +1,26 @@
-import Provider from '@/app/provider'
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import AuthWrapper from '@/components/wrapper/auth-wrapper'
-import { Analytics } from "@vercel/analytics/react"
-import { GeistSans } from 'geist/font/sans'
-import type { Metadata } from 'next'
-import './globals.css'
+import Provider from "@/app/provider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import AuthWrapper from "@/components/wrapper/auth-wrapper";
+import { Analytics } from "@vercel/analytics/react";
+import { GeistSans } from "geist/font/sans";
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://starter.rasmic.xyz"),
+  // metadataBase: new URL(""),
   title: {
-    default: 'Nextjs Starter Kit',
-    template: `%s | Nextjs Starter Kit`
+    default: "Zova.chat",
+    template: `%s | Zova.chat`,
   },
-  description: 'The Ultimate Nextjs 14 Starter Kit for quickly building your SaaS, giving you time to focus on what really matters',
-  openGraph: {
-    description: 'The Ultimate Nextjs 14 Starter Kit for quickly building your SaaS, giving you time to focus on what really matters',
-    images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
-    url: 'https://starter.rasmic.xyz/'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Nextjs Starter Kit',
-    description: 'The Ultimate Nextjs 14 Starter Kit for quickly building your SaaS, giving you time to focus on what really matters',
-    siteId: "",
-    creator: "@rasmic",
-    creatorId: "",
-    images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
-  },
-}
+  description:
+    "Train agents using your PDFs, Word documents, websites, and more. Empower them to deliver accurate, data-driven insights tailored to your needs",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <AuthWrapper>
@@ -66,5 +53,5 @@ export default function RootLayout({
         </body>
       </html>
     </AuthWrapper>
-  )
+  );
 }

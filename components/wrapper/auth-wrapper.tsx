@@ -1,17 +1,12 @@
+import { SessionProvider } from "next-auth/react";
 import { ReactNode } from "react";
-
-import config from "@/config";
 
 interface AuthWrapperProps {
   children: ReactNode;
 }
 
 const AuthWrapper = ({ children }: AuthWrapperProps) => {
-  if (!config.auth.enabled) {
-    return <>{children}</>;
-  }
-
-  return { children };
+  return <SessionProvider>{children}</SessionProvider>;
 };
 
 export default AuthWrapper;

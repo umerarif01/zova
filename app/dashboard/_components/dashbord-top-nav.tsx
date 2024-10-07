@@ -1,16 +1,27 @@
-"use client"
+"use client";
 
-import ModeToggle from '@/components/mode-toggle'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
-import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { UserProfile } from '@/components/user-profile'
-import config from '@/config'
-import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import { Banknote, Folder, HomeIcon, Settings } from 'lucide-react'
-import Link from 'next/link'
-import { ReactNode } from 'react'
+import ModeToggle from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import {
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { UserProfile } from "@/components/user-profile";
+import config from "@/config";
+import { HamburgerMenuIcon } from "@radix-ui/react-icons";
+import {
+  Banknote,
+  ChartNoAxesCombined,
+  Folder,
+  HomeIcon,
+  Settings,
+} from "lucide-react";
+import Link from "next/link";
+import { ReactNode } from "react";
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
   return (
@@ -26,7 +37,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           <SheetContent side="left">
             <SheetHeader>
               <Link href="/">
-                <SheetTitle>Nextjs Starter Kit</SheetTitle>
+                <SheetTitle>Zova.chat</SheetTitle>
               </Link>
             </SheetHeader>
             <div className="flex flex-col space-y-3 mt-[1rem]">
@@ -39,27 +50,10 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
                 </Link>
               </DialogClose>
               <DialogClose asChild>
-                <Link href="/dashboard/projects">
+                <Link href="/dashboard/analytics">
                   <Button variant="outline" className="w-full">
-                    <Folder className="mr-2 h-4 w-4" />
-                    Projects
-                  </Button>
-                </Link>
-              </DialogClose>
-              <DialogClose asChild>
-                <Link href="/dashboard/finance">
-                  <Button variant="outline" className="w-full">
-                    <Banknote className="mr-2 h-4 w-4" />
-                    Finance
-                  </Button>
-                </Link>
-              </DialogClose>
-              <Separator className="my-3" />
-              <DialogClose asChild>
-                <Link href="/dashboard/settings">
-                  <Button variant="outline" className="w-full">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    <ChartNoAxesCombined className="mr-2 h-4 w-4" />
+                    Analytics
                   </Button>
                 </Link>
               </DialogClose>
@@ -67,11 +61,11 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </SheetContent>
         </Dialog>
         <div className="flex justify-center items-center gap-2 ml-auto">
-          {config?.auth?.enabled && <UserProfile />}
+          <UserProfile />
           <ModeToggle />
         </div>
       </header>
       {children}
     </div>
-  )
+  );
 }

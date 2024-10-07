@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-
+import { Github } from "lucide-react";
 export default function Footer() {
   const {
     register,
@@ -16,56 +16,53 @@ export default function Footer() {
     <footer className="border-t dark:bg-black">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2">
-          <div className="border-b   py-8 lg:order-last lg:border-b-0 lg:border-s lg:py-16 lg:ps-16">
+          <div className="border-b py-8 lg:order-last lg:border-b-0 lg:border-s lg:py-16 lg:ps-16">
             <div className="mt-8 space-y-4 lg:mt-0">
               <div>
-                <h3 className="text-2xl font-medium">
-                  Unlock the Power of Zova.Chat
+                <h3 className="text-2xl font-medium flex items-center">
+                  <Github className="mr-2 w-6 h-6" /> Study Our Code on GitHub
                 </h3>
-                <p className="mt-4 max-w-lg  ">
-                  This is your gateway to smarter document interactions. Enter
-                  your email below to stay updated with the latest features,
-                  tips, and special offers from ChatPDF.
+                <p className="mt-4 max-w-lg">
+                  Interested in understanding how Zova.Chat works? Visit our
+                  GitHub repository to explore the codebase, contribute, and
+                  stay updated with our latest developments.
                 </p>
               </div>
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col border rounded-xl p-4 gap-3 mt-6 w-full"
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Input
-                  {...register("email", { required: true })}
-                  placeholder="Enter your email"
-                  type="email"
-                />
-                <Button type="submit">Sign Up</Button>
-              </form>
+                <Button type="button" className="w-full mt-6">
+                  <Github className="mr-2 w-4 h-4" /> View on GitHub
+                </Button>
+              </a>
             </div>
           </div>
-
           <div className="py-8 lg:py-16 lg:pe-16">
             <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
               <div>
-                <p className="font-medium ">Socials</p>
+                <p className="font-medium ">Resources</p>
 
                 <ul className="mt-6 space-y-4 text-sm">
                   <li>
                     <a
-                      href="https://twitter.com/rasmickyy"
+                      href="#"
                       target="_blank"
                       className="transition hover:opacity-75"
                     >
                       {" "}
-                      Twitter{" "}
+                      Terms & Conditions{" "}
                     </a>
                   </li>
                   <li>
                     <a
-                      href="https://www.youtube.com/@rasmic"
+                      href="#"
                       target="_blank"
                       className="  transition hover:opacity-75"
                     >
                       {" "}
-                      YouTube{" "}
+                      Privacy Policy{" "}
                     </a>
                   </li>
                 </ul>
@@ -83,13 +80,7 @@ export default function Footer() {
                       className="  transition hover:opacity-75"
                     >
                       {" "}
-                      Docs{" "}
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/" className="  transition hover:opacity-75">
-                      {" "}
-                      Methodology{" "}
+                      Github{" "}
                     </a>
                   </li>
                 </ul>

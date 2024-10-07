@@ -13,19 +13,19 @@ import config from "@/config";
 import { CreditCard, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 export function UserProfile() {
-  const router = useRouter();
-
-  if (!config?.auth?.enabled) {
-    router.back();
-  }
+  const session = useSession();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="w-[2.25rem] h-[2.25rem]">
         <Avatar>
-          <AvatarImage src={""} alt="User Profile" />
+          <AvatarImage
+            src={session.data?.user?.image || ""}
+            alt="User Profile"
+          />
           <AvatarFallback></AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -49,7 +49,7 @@ export function UserProfile() {
           </Link>
         </DropdownMenuGroup>
 
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>

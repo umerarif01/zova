@@ -1,7 +1,4 @@
-"use client";
 import PageWrapper from "@/components/wrapper/page-wrapper";
-import config from "@/config";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { GoogleIcon } from "@/components/Icons";
+import { signIn } from "@/auth";
+import { GoogleButton } from "../../_components/google-button";
 
 export default function SignInPage() {
   return (
@@ -20,7 +18,7 @@ export default function SignInPage() {
       <div className="flex min-w-screen justify-center my-[5rem]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+            <CardTitle className="text-3xl font-bold">
               Login to your account
             </CardTitle>
             <CardDescription>
@@ -28,14 +26,16 @@ export default function SignInPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
-              <div className="space-y-2">
-                <Input type="email" placeholder="Enter your email address" />
-                <Input type="password" placeholder="Enter your password" />
-              </div>
-              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                Sign Up
-              </Button>
+            <div className="space-y-4">
+              <form className="space-y-4">
+                <div className="space-y-2">
+                  <Input type="email" placeholder="Enter your email address" />
+                  <Input type="password" placeholder="Enter your password" />
+                </div>
+                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                  Sign Up
+                </Button>
+              </form>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -46,10 +46,15 @@ export default function SignInPage() {
                   </span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full">
-                <GoogleIcon />
-                Google
-              </Button>
+
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("google", { redirectTo: "/dashboard" });
+                }}
+              >
+                <GoogleButton />
+              </form>
               <p className="text-xs text-center text-gray-500">
                 By clicking continue, you agree to our{" "}
                 <Link href="#" className="underline">
@@ -60,7 +65,7 @@ export default function SignInPage() {
                   Privacy Policy
                 </Link>
               </p>
-            </form>
+            </div>
             <div className="mt-4 text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link href="/sign-up" className="text-purple-600 hover:underline">

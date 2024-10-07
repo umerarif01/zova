@@ -138,6 +138,14 @@ const config: Config = {
             transform: "scale(1)",
           },
         },
+        "shiny-text": {
+          "0%, 90%, 100%": {
+            "background-position": "calc(-100% - var(--shimmer-width)) 0",
+          },
+          "30%, 60%": {
+            "background-position": "calc(100% + var(--shimmer-width)) 0",
+          },
+        },
       },
       animation: {
         "logo-cloud": "logo-cloud 30s linear infinite", // Adjust duration and timing as needed for your design.
@@ -149,6 +157,7 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
         "background-shine": "background-shine 2s linear infinite",
+        "shiny-text": "shiny-text 8s infinite",
       },
     },
   },

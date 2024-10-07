@@ -11,7 +11,7 @@ import {
 } from "../ui/sheet";
 import { UserProfile } from "../user-profile";
 import ModeToggle from "../mode-toggle";
-import { BlocksIcon } from "lucide-react";
+import { BlocksIcon, LayoutDashboard, LogIn } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -21,29 +21,15 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import config from "@/config";
+import Image from "next/image";
 
 import { Dialog, DialogClose } from "@radix-ui/react-dialog";
 import { cn } from "@/utils/cn";
-
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Marketing Page",
-    href: "/marketing-page",
-    description: "Write some wavy here to get them to click.",
-  },
-  {
-    title: "Marketing Page",
-    href: "/marketing-page",
-    description: "Write some wavy here to get them to click.",
-  },
-  {
-    title: "Marketing Page",
-    href: "/marketing-page",
-    description: "Write some wavy here to get them to click.",
-  },
-];
+import { useSession } from "next-auth/react";
 
 export default function NavBar() {
+  const session = useSession();
+
   return (
     <div className="flex min-w-full fixed justify-between p-2 border-b z-10 dark:bg-black dark:bg-opacity-50 bg-white">
       <div className="flex justify-between w-full min-[825px]:hidden">
@@ -89,37 +75,33 @@ export default function NavBar() {
       <NavigationMenu>
         <NavigationMenuList className="max-[825px]:hidden flex gap-3 w-[100%] justify-between">
           <Link href="/" className="pl-2 flex items-center" aria-label="Home">
-            <BlocksIcon aria-hidden="true" />
+            <Image
+              src="/zova-logo.png"
+              alt="Zova Logo"
+              width={35}
+              height={35}
+              className=""
+            />
             <span className="sr-only">Home</span>
           </Link>
         </NavigationMenuList>
-        <NavigationMenuList>
-          <NavigationMenuItem className="max-[825px]:hidden ml-5">
-            <NavigationMenuTrigger className="dark:bg-black dark:bg-opacity-50">
-              Features
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <ul className="flex flex-col w-[400px] gap-3 p-4 lg:w-[500px]">
-                {components.map((component) => (
-                  <ListItem
-                    key={component.title}
-                    title={component.title}
-                    href={component.href}
-                  >
-                    {component.description}
-                  </ListItem>
-                ))}
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-          <NavigationMenuItem className="max-[825px]:hidden">
-            <Link href="/dashboard" legacyBehavior passHref>
-              <Button variant="ghost">Dashboard</Button>
-            </Link>
-          </NavigationMenuItem>
-        </NavigationMenuList>
       </NavigationMenu>
       <div className="flex items-center gap-2 max-[825px]:hidden">
+        {session.data?.user ? (
+          <Link href="/dashboard" legacyBehavior passHref>
+            <Button size="sm" variant="outline" className="text-sm">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/sign-in" legacyBehavior passHref>
+            <Button size="sm" variant="outline" className="text-sm">
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          </Link>
+        )}
         <ModeToggle />
       </div>
     </div>
