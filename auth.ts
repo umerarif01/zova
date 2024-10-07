@@ -14,6 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/sign-in",
   },
+  secret: process.env.AUTH_SECRET!,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
