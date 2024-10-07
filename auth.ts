@@ -14,26 +14,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/sign-in",
   },
-  secret: process.env.AUTH_SECRET!,
+  trustHost: true,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  providers: [
-    Google,
-    // Credentials({
-    //   credentials: {
-    //     email: { label: "Email", type: "email" },
-    //     password: { label: "Password", type: "password" },
-    //   },
-    //   async authorize(credentials) {
-    //     const user = await validateCredentials(credentials);
-    //     return user ? user : null; // Ensure to return User or null
-    //   },
-    // }),
-  ],
+  providers: [Google],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
