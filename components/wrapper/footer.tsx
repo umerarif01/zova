@@ -29,7 +29,7 @@ export default function Footer() {
                 </p>
               </div>
               <a
-                href="https://github.com"
+                href="https://github.com/umerarif01/zova"
                 target="_blank"
                 rel="noopener noreferrer"
               >
