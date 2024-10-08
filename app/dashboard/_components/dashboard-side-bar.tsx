@@ -27,6 +27,7 @@ export default function DashboardSideBar() {
               alt="Zova Logo"
               width={35}
               height={35}
+              priority
             />
           </Link>
         </div>
