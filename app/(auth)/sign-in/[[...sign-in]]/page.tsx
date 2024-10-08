@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { signIn } from "@/auth";
+import { signIn } from "@/utils/auth";
 import { GoogleButton } from "../../_components/google-button";
 
 export default function SignInPage() {

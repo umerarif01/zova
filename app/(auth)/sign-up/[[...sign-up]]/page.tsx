@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { GoogleIcon } from "@/components/Icons";
+import { GoogleButton } from "../../_components/google-button";
+import { signIn } from "@/utils/auth";
 
 export default function SignUpPage() {
   return (
@@ -47,10 +49,14 @@ export default function SignUpPage() {
                   </span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full">
-                <GoogleIcon />
-                Google
-              </Button>
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("google", { redirectTo: "/dashboard" });
+                }}
+              >
+                <GoogleButton />
+              </form>
               <p className="text-xs text-center text-muted-foreground">
                 By clicking continue, you agree to our{" "}
                 <Link href="#" className="underline">

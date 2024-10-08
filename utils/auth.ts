@@ -1,14 +1,13 @@
 import NextAuth from "next-auth";
-import { db } from "./drizzle/db";
+import { db } from "@/drizzle/db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import {
   accounts,
   sessions,
   verificationTokens,
   users,
-} from "./drizzle/schema";
+} from "@/drizzle/schema";
 import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
