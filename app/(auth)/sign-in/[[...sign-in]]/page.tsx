@@ -15,7 +15,7 @@ import { GoogleButton } from "../../_components/google-button";
 export default function SignInPage() {
   return (
     <PageWrapper>
-      <div className="flex min-w-screen justify-center my-[5rem]">
+      <div className="flex min-w-screen justify-center my-[5rem] mx-4">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold">

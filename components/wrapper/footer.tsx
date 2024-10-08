@@ -20,12 +20,11 @@ export default function Footer() {
             <div className="mt-8 space-y-4 lg:mt-0">
               <div>
                 <h3 className="text-2xl font-medium flex items-center">
-                  <Github className="mr-2 w-6 h-6" /> Study Our Code on GitHub
+                  <Github className="mr-2 w-6 h-6" /> Proudly open-source
                 </h3>
                 <p className="mt-4 max-w-lg">
-                  Interested in understanding how Zova.Chat works? Visit our
-                  GitHub repository to explore the codebase, contribute, and
-                  stay updated with our latest developments.
+                  Our source code is available on GitHub - feel free to read,
+                  review, or contribute to it however you want!
                 </p>
               </div>
               <a

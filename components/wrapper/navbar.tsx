@@ -31,7 +31,7 @@ export default function NavBar() {
   const session = useSession();
 
   return (
-    <div className="flex min-w-full fixed justify-between p-2 border-b z-10 dark:bg-black dark:bg-opacity-50 bg-white">
+    <div className="flex min-w-full fixed justify-between p-2 border-b z-100 dark:bg-black dark:bg-opacity-50 bg-white">
       <div className="flex justify-between w-full min-[825px]:hidden">
         <Dialog>
           <SheetTrigger className="p-2 transition">
