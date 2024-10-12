@@ -15,6 +15,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
+import UserIcon from "@/public/user-icon.webp";
+
 export function UserProfile() {
   const session = useSession();
 
@@ -22,9 +25,13 @@ export function UserProfile() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="w-[2.25rem] h-[2.25rem]">
         <Avatar>
-          <AvatarImage
-            src={session.data?.user?.image || ""}
+          <Image
+            src={session.data?.user?.image || UserIcon}
             alt="User Profile"
+            width={100}
+            height={100}
+            className="object-cover rounded-full"
+            priority
           />
           <AvatarFallback></AvatarFallback>
         </Avatar>
