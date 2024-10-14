@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -110,14 +110,14 @@ export const columns: ColumnDef<DataSource>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(dataSource.id)}
-            >
-              Copy data source ID
+            <DropdownMenuItem>
+              <RefreshCw className="mr-3 h-4 w-4" />
+              Resync data source
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Remove data source</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Trash2 className="mr-3 h-4 w-4" />
+              Delete data source
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

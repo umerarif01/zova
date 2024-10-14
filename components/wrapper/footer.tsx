@@ -110,7 +110,10 @@ export default function Footer() {
               </ul>
 
               <p className="mt-8 text-xs  ">
-                &copy; 2024. Zova.chat. All rights reserved.
+                Powered by{" "}
+                <span className="font-semibold">
+                  Next.js, Langchain, OpenAI, Anthropic & Pinecone
+                </span>
               </p>
             </div>
           </div>

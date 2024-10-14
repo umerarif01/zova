@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import ChatbotIntegrationPage from "../../_components/chatbot-integration";
 
 export default function IntegrationPage() {
   return (
@@ -9,6 +10,7 @@ export default function IntegrationPage() {
           Integration
         </h2>
       </div>
+      <ChatbotIntegrationPage />
     </div>
   );
 }

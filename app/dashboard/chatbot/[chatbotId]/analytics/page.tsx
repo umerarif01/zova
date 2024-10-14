@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
+import { ChatbotResponsesChart } from "../../_components/chatbot-responses-chart";
+import { ChatbotChatsChart } from "../../_components/chatbot-chats-chart";
+import { ChatbotTokensChart } from "../../_components/chatbot-tokens-chart";
 
 export default function AnalyticsPage() {
   return (
@@ -16,7 +19,17 @@ export default function AnalyticsPage() {
           <DownloadIcon className="mr-2 h-4 w-4" /> Export Report
         </Button>
       </div>
-      {/* Add main content here */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 w-full">
+        <div className="lg:col-span-1">
+          <ChatbotChatsChart />
+        </div>
+        <div className="lg:col-span-1">
+          <ChatbotResponsesChart />
+        </div>
+        <div className="col-span-1 lg:col-span-2">
+          <ChatbotTokensChart />
+        </div>
+      </div>
     </div>
   );
 }

@@ -47,7 +47,16 @@ export default function NavBar() {
           </SheetTrigger>
           <SheetContent side="left">
             <SheetHeader>
-              <SheetTitle>Zova.chat</SheetTitle>
+              <SheetTitle className="flex items-center">
+                <Image
+                  src="/zova-logo.png"
+                  alt="Zova Logo"
+                  width={35}
+                  height={35}
+                  className="mr-2"
+                />
+                zova.chat
+              </SheetTitle>
             </SheetHeader>
             <div className="flex flex-col space-y-3 mt-[1rem]">
               <DialogClose asChild>
@@ -75,13 +84,16 @@ export default function NavBar() {
       <NavigationMenu>
         <NavigationMenuList className="max-[825px]:hidden flex gap-3 w-[100%] justify-between">
           <Link href="/" className="pl-2 flex items-center" aria-label="Home">
-            <Image
-              src="/zova-logo.png"
-              alt="Zova Logo"
-              width={35}
-              height={35}
-              className=""
-            />
+            <div className="flex items-center scale-90">
+              <Image
+                src="/zova-logo.png"
+                alt="Zova Logo"
+                width={35}
+                height={35}
+                className="mr-2"
+              />
+              <span className="font-semibold">zova.chat</span>
+            </div>
             <span className="sr-only">Home</span>
           </Link>
         </NavigationMenuList>

@@ -1,118 +1,51 @@
-"use client";
-
-import React, { forwardRef, useRef } from "react";
-
-import { cn } from "@/lib/utils";
-import { AnimatedBeam } from "../ui/animated-beam";
-import Image from "next/image";
+import OrbitingCircles from "@/components/magicui/orbiting-circles";
+import { IconProps } from "@radix-ui/react-icons/dist/types";
 import { Type } from "lucide-react";
+import Image from "next/image";
 
-const Circle = forwardRef<
-  HTMLDivElement,
-  { className?: string; children?: React.ReactNode }
->(({ className, children }, ref) => {
+export function OrbitingCirclesComponent() {
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "z-10 flex size-14 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-});
+    <div className="relative flex h-[500px] w-full max-w-[32rem] items-center justify-center overflow-hidden rounded-lg">
+      <span className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-purple-400/80 bg-clip-text text-center text-6xl font-semibold leading-none text-transparent dark:from-white dark:to-purple-900/60">
+        Train Agents
+      </span>
 
-Circle.displayName = "Circle";
+      {/* Inner Circles */}
+      <OrbitingCircles
+        className="h-[30px] w-[30px] border-none bg-transparent"
+        duration={20}
+        delay={20}
+        radius={80}
+      >
+        <Icons.csv />
+      </OrbitingCircles>
+      <OrbitingCircles
+        className="h-[30px] w-[30px] border-none bg-transparent"
+        duration={20}
+        delay={10}
+        radius={80}
+      >
+        <Icons.googleDocs />
+      </OrbitingCircles>
 
-export function AnimatedBeamMultipleOutputDemo({
-  className,
-}: {
-  className?: string;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const div1Ref = useRef<HTMLDivElement>(null);
-  const div2Ref = useRef<HTMLDivElement>(null);
-  const div3Ref = useRef<HTMLDivElement>(null);
-  const div4Ref = useRef<HTMLDivElement>(null);
-  const div5Ref = useRef<HTMLDivElement>(null);
-  const div6Ref = useRef<HTMLDivElement>(null);
-  const div7Ref = useRef<HTMLDivElement>(null);
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-[350px] w-full items-center justify-center overflow-hidden mb-[2rem] z-10",
-        className
-      )}
-      ref={containerRef}
-    >
-      <div className="flex size-full flex-row items-stretch justify-between gap-10 max-w-xl">
-        <div className="flex flex-col justify-center gap-2">
-          <Circle ref={div1Ref}>
-            <Icons.pdf />
-          </Circle>
-          <Circle ref={div2Ref}>
-            <Icons.googleDocs />
-          </Circle>
-          <Circle ref={div3Ref}>
-            <Icons.www />
-          </Circle>
-          <Circle ref={div4Ref}>
-            <Icons.csv />
-          </Circle>
-          <Circle ref={div5Ref}>
-            <Icons.text />
-          </Circle>
-        </div>
-        <div className="flex flex-col justify-center">
-          <Circle ref={div6Ref} className="size-16">
-            <Image
-              src="/zova-logo.png"
-              alt="Zova Logo"
-              width={100}
-              height={100}
-            />
-          </Circle>
-        </div>
-        <div className="flex flex-col justify-center">
-          <Circle ref={div7Ref}>
-            <Icons.user />
-          </Circle>
-        </div>
-      </div>
-
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div1Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div2Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div3Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div4Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div5Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div6Ref}
-        toRef={div7Ref}
-      />
+      {/* Outer Circles (reverse) */}
+      <OrbitingCircles
+        className="h-[34px] w-[34px] border-none bg-transparent"
+        reverse
+        radius={190}
+        duration={20}
+      >
+        <Icons.pdf />
+      </OrbitingCircles>
+      <OrbitingCircles
+        className="h-[50px] w-[50px] border-none bg-transparent"
+        reverse
+        radius={190}
+        duration={20}
+        delay={20}
+      >
+        <Icons.www />
+      </OrbitingCircles>
     </div>
   );
 }
