@@ -6,12 +6,14 @@ import ChatbotCard from "./_components/chatbot-card";
 
 const chatbots = [
   {
+    id: "1",
     title: "Chatbot ABC",
     chatCount: 2,
     sourceCount: 5,
     createdAt: "2 days ago",
   },
   {
+    id: "2",
     title: "Chatbot XYZ",
     chatCount: 1,
     sourceCount: 3,

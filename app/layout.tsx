@@ -5,6 +5,7 @@ import AuthWrapper from "@/components/wrapper/auth-wrapper";
 import { Analytics } from "@vercel/analytics/react";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -38,6 +39,12 @@ export default function RootLayout({
           />
         </head>
         <body className={GeistSans.className}>
+          <NextTopLoader
+            color="#8A2BE2"
+            height={2}
+            easing="ease"
+            showSpinner={false}
+          />
           <Provider>
             <ThemeProvider
               attribute="class"
