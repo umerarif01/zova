@@ -9,18 +9,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { KBSource } from "@/types/kb-source";
 
-export type DataSource = {
-  id: string;
-  type: "PDF" | "URL" | "TXT" | "Text" | "Document" | "Sitemap" | "CSV";
-  sourceName: string;
-  status: "Processing" | "Completed" | "Failed";
-};
-
-export const columns: ColumnDef<DataSource>[] = [
+export const columns: ColumnDef<KBSource>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -49,14 +43,14 @@ export const columns: ColumnDef<DataSource>[] = [
     cell: ({ row }) => {
       const type = row.getValue("type") as string;
       return (
-        <div className="inline-block border rounded px-2 py-1 text-center text-xs font-medium ">
-          {type}
+        <div className="inline-block border rounded px-2 py-1 text-center text-xs font-medium">
+          {type.toUpperCase()}
         </div>
       );
     },
   },
   {
-    accessorKey: "sourceName",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
@@ -73,32 +67,18 @@ export const columns: ColumnDef<DataSource>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      let statusColor = "";
-
-      switch (status.toLowerCase()) {
-        case "completed":
-          statusColor = "text-green-600";
-          break;
-        case "failed":
-          statusColor = "text-red-600";
-          break;
-        case "processing":
-          statusColor = "text-purple-600";
-          break;
-        default:
-          statusColor = "";
-      }
-
+      const status = row.getValue("status") as KBSource["status"];
       return (
-        <div className={`capitalize ${statusColor} font-medium`}>{status}</div>
+        <Badge variant={status === "completed" ? "default" : "secondary"}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
       );
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const dataSource = row.original;
+      const source = row.original;
 
       return (
         <DropdownMenu>
@@ -112,11 +92,11 @@ export const columns: ColumnDef<DataSource>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>
               <RefreshCw className="mr-3 h-4 w-4" />
-              Resync data source
+              Resync source
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Trash2 className="mr-3 h-4 w-4" />
-              Delete data source
+              Delete source
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

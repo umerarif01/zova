@@ -1,25 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import { MoreVertical, PlusIcon } from "lucide-react";
+import { Loader, MoreVertical, PlusIcon } from "lucide-react";
 import ChatbotCard from "./_components/chatbot-card";
-
-const chatbots = [
-  {
-    id: "1",
-    title: "Chatbot ABC",
-    chatCount: 2,
-    sourceCount: 5,
-    createdAt: "2 days ago",
-  },
-  {
-    id: "2",
-    title: "Chatbot XYZ",
-    chatCount: 1,
-    sourceCount: 3,
-    createdAt: "1 week ago",
-  },
-];
+import CreateChatbotDrawer from "./_components/create-chatbot-drawer";
+import UserChatbots from "./_components/user-chatbots";
+import { Suspense } from "react";
 
 export default async function Dashboard() {
   return (
@@ -28,19 +14,18 @@ export default async function Dashboard() {
         <h2 className="mt-6 sm:mt-0 scroll-m-20 text-2xl sm:text-3xl font-semibold tracking-tight transition-colors">
           Recent Chatbots
         </h2>
-        <Button
-          variant="outline"
-          className="mt-4 sm:mt-0 flex items-center"
-          size={"sm"}
-        >
-          <PlusIcon className="mr-2 h-4 w-4" /> Create Chatbot
-        </Button>
+        <CreateChatbotDrawer />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-        {chatbots.map((chatbot, index) => (
-          <ChatbotCard key={index} {...chatbot} />
-        ))}
-      </div>
+
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-10 w-full">
+            <Loader className="animate-spin" />
+          </div>
+        }
+      >
+        <UserChatbots />
+      </Suspense>
     </div>
   );
 }

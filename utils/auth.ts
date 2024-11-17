@@ -26,13 +26,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-      if (isOnDashboard) {
+      const isOnChat = nextUrl.pathname.startsWith("/chat/1");
+      const isProtectedRoute = isOnDashboard || isOnChat;
+
+      if (isProtectedRoute) {
         if (isLoggedIn) return true;
         return false;
       } else if (isLoggedIn) {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
       return true;
+    },
+    session({ session, user }) {
+      session.user.id = user.id;
+      return session;
     },
   },
 });

@@ -5,9 +5,69 @@ import {
   text,
   primaryKey,
   integer,
+  serial,
+  varchar,
+  pgEnum,
+  uuid,
 } from "drizzle-orm/pg-core";
 
+export const userSystemEnum = pgEnum("user_system_enum", ["system", "user"]);
+
 import type { AdapterAccountType } from "next-auth/adapters";
+
+export const sourceStatusEnum = pgEnum("source_status_enum", [
+  "processing",
+  "completed",
+  "failed",
+]);
+
+export const chatbots = pgTable("chatbots", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const kbSources = pgTable("kb_sources", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  chatbotId: uuid("chatbotId")
+    .notNull()
+    .references(() => chatbots.id, { onDelete: "cascade" }),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  sourceKey: text("sourceKey").notNull(),
+  sourceUrl: text("sourceUrl").notNull(),
+  status: sourceStatusEnum("status").notNull().default("processing"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const conversations = pgTable("conversations", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  chatbotId: uuid("chatbotId")
+    .notNull()
+    .references(() => chatbots.id, { onDelete: "cascade" }),
+  firstMessage: text("firstMessage"),
+  endedAt: timestamp("endedAt"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: text("id").primaryKey(),
+  conversationId: text("conversationId")
+    .notNull()
+    .references(() => conversations.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  role: text("role").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
 export const users = pgTable("user", {
   id: text("id")
@@ -85,3 +145,10 @@ export const authenticators = pgTable(
     }),
   })
 );
+
+export type DrizzleConversation = typeof conversations.$inferSelect;
+
+export type DrizzleChatbot = typeof chatbots.$inferSelect;
+export type InsertChatbot = typeof chatbots.$inferInsert;
+
+export type DrizzleMessage = typeof messages.$inferSelect;

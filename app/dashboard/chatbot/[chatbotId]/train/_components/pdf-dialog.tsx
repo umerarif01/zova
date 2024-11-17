@@ -13,36 +13,96 @@ import Image from "next/image";
 import PdfIcon from "@/public/pdf-2.png";
 import { UploadIcon } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
+import { uploadToS3 } from "@/utils/s3";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useRouter, useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PDFUploadDialog() {
+  const router = useRouter();
+  const params = useParams();
+  const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const selectedFile = acceptedFiles[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
-    } else {
-      alert("Please select a PDF file.");
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "application/pdf": [".pdf"] },
-    multiple: false,
+  const [open, setOpen] = useState(false);
+  const { mutate, isPending } = useMutation({
+    mutationFn: async ({
+      file_key,
+      file_name,
+    }: {
+      file_key: string;
+      file_name: string;
+    }) => {
+      const response = await axios.post("/api/ingest-source", {
+        file_key,
+        file_name,
+        chatbotId: params.chatbotId,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setFile(null);
+      setOpen(false);
+      // Invalidate sources query to refresh the table
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
+    },
+    onError: (err) => {
+      toast.error("Error uploading file");
+      console.error(err);
+    },
   });
 
-  const handleSubmit = () => {
-    if (file) {
-      // Here you would typically upload the file to your server
-      console.log("Uploading file:", file.name);
-      // Reset the file state after upload
-      setFile(null);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { "application/pdf": [".pdf"] },
+    maxFiles: 1,
+    onDrop: async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (file.size > 10 * 1024 * 1024) {
+        // bigger than 10mb!
+        toast.error("File too large");
+        return;
+      }
+      setFile(file);
+    },
+  });
+
+  const handleSubmit = async () => {
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("chatbotId", params.chatbotId as string);
+      const data = await uploadToS3(formData);
+      console.log("s3 upload data:", data);
+      if (!data?.file_key || !data.file_name) {
+        toast.error("Something went wrong");
+        return;
+      }
+      mutate(data, {
+        onSuccess: ({ chat_id }) => {
+          toast.success("Source added to knowledge base!");
+          setFile(null);
+        },
+        onError: (err) => {
+          toast.error("Error creating chat");
+          console.error(err);
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-500">
@@ -86,7 +146,7 @@ export default function PDFUploadDialog() {
         <Button
           onClick={handleSubmit}
           className="w-full"
-          disabled={!file}
+          disabled={!file || uploading || isPending}
           variant="custom"
         >
           Submit

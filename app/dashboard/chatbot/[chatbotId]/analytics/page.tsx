@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
-import { ChatbotResponsesChart } from "../../_components/chatbot-responses-chart";
-import { ChatbotChatsChart } from "../../_components/chatbot-chats-chart";
-import { ChatbotTokensChart } from "../../_components/chatbot-tokens-chart";
+import { ChatbotResponsesChart } from "./_components/chatbot-responses-chart";
+import { ChatbotChatsChart } from "./_components/chatbot-chats-chart";
+import { ChatbotTokensChart } from "./_components/chatbot-tokens-chart";
 
 export default function AnalyticsPage() {
   return (

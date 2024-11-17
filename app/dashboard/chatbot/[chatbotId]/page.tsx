@@ -1,20 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import ConversationCard from "../_components/conversation-card";
+import ConversationCard from "./_components/conversation-card";
 
 const conversations = [
   {
     id: 1,
+    chatbotId: "1",
+    conversationId: "1",
     title: "What is Zova.chat?",
     createdAt: "1 day ago",
   },
   {
     id: 2,
+    chatbotId: "1",
+    conversationId: "2",
     title: "What is ABC?",
     createdAt: "1 day ago",
   },
   {
     id: 3,
+    chatbotId: "1",
+    conversationId: "3",
     title: "What is XYZ?",
     createdAt: "1 day ago",
   },
@@ -41,6 +47,7 @@ export default function ChatbotPage() {
             key={conversation.id}
             title={conversation.title}
             createdAt={conversation.createdAt}
+            conversationId={conversation.conversationId}
           />
         ))}
       </div>
