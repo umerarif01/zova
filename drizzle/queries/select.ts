@@ -1,12 +1,13 @@
 "use server";
 
-import { sql, count, eq } from "drizzle-orm";
+import { sql, count, eq, and } from "drizzle-orm";
 import { chatbots, conversations, kbSources } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
 
 export async function getChatbots() {
   const session = await auth();
+
   if (!session?.user) {
     throw new Error("You must be signed in to use this");
   }
@@ -22,5 +23,24 @@ export async function getChatbots() {
     .from(chatbots)
     .leftJoin(conversations, eq(conversations.chatbotId, chatbots.id))
     .leftJoin(kbSources, eq(kbSources.chatbotId, chatbots.id))
-    .groupBy(chatbots.id);
+    .groupBy(chatbots.id)
+    .where(eq(chatbots.userId, session.user.id as string));
+}
+
+export async function getConversations(chatbotId: string) {
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error("You must be signed in to use this");
+  }
+
+  return await db
+    .select()
+    .from(conversations)
+    .where(
+      and(
+        eq(conversations.chatbotId, chatbotId),
+        eq(conversations.userId, session.user.id as string)
+      )
+    );
 }

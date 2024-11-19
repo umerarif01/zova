@@ -10,30 +10,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
 import Link from "next/link";
+import { DrizzleConversation } from "@/drizzle/schema";
 
-interface ConversationCardProps {
-  conversationId: string;
-  title: string;
-  createdAt: string;
-}
+type ConversationCardProps = DrizzleConversation;
 
 const ConversationCard = ({
-  title,
+  id,
+  firstMessage,
   createdAt,
-  conversationId,
 }: ConversationCardProps) => {
   return (
-    <Link href={`/chat/${conversationId}`}>
+    <Link href={`/chat/${id}`}>
       <Card className="w-full max-w-lg shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105 bg-background dark:bg-[#0c0c0d]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">{title}</CardTitle>
+          <CardTitle className="text-lg font-medium">
+            {firstMessage || "New Conversation"}
+          </CardTitle>
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <MoreVertical className="h-4 w-4" />
             <span className="sr-only">More options</span>
           </Button>
         </CardHeader>
         <CardFooter>
-          <p className="text-sm text-muted-foreground">{createdAt}</p>
+          <p className="text-sm text-muted-foreground">
+            {new Date(createdAt).toLocaleDateString()}
+          </p>
         </CardFooter>
       </Card>
     </Link>

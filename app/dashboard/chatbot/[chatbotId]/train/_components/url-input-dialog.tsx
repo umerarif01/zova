@@ -12,10 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import UrlIcon from "@/public/url.png";
-import { LinkIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { LinkIcon, PlusIcon, TrashIcon, Loader } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function URLInputDialog() {
+  const params = useParams();
+  const queryClient = useQueryClient();
   const [urls, setUrls] = useState<string[]>([""]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (url: string) => {
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://" + url;
+      }
+
+      const response = await axios.post("/api/ingest-source", {
+        type: "url",
+        content: url,
+        file_name: new URL(url).hostname,
+        chatbotId: params.chatbotId,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("URL added to knowledge base!");
+      setUrls([""]);
+      setIsOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
+    },
+    onError: (err) => {
+      toast.error("Error adding URL");
+      console.error(err);
+    },
+  });
 
   const handleUrlChange = (index: number, value: string) => {
     const newUrls = [...urls];
@@ -32,18 +67,22 @@ export default function URLInputDialog() {
     setUrls(newUrls);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validUrls = urls.filter((url) => url.trim() !== "");
     if (validUrls.length > 0) {
-      // Here you would typically send the URLs to your server
-      console.log("Submitting URLs:", validUrls);
-      // Reset the URLs state after submission
-      setUrls([""]);
+      try {
+        // Process each URL sequentially
+        for (const url of validUrls) {
+          await mutate(url);
+        }
+      } catch (error) {
+        console.error("Error processing URLs:", error);
+      }
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border border-border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-600">
@@ -100,9 +139,16 @@ export default function URLInputDialog() {
           variant="custom"
           onClick={handleSubmit}
           className="w-full"
-          disabled={urls.every((url) => url.trim() === "")}
+          disabled={urls.every((url) => url.trim() === "") || isPending}
         >
-          Submit
+          {isPending ? (
+            <>
+              <Loader className="animate-spin w-4 h-4 mr-2" />
+              Processing...
+            </>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </DialogContent>
     </Dialog>

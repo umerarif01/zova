@@ -11,18 +11,47 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import DocIcon from "@/public/doc.png";
-import { UploadIcon } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import { useParams } from "next/navigation";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import axios from "axios";
+import { uploadToS3 } from "@/utils/s3";
 
 export default function DocumentUploadDialog() {
+  const params = useParams();
+  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const { mutate } = useMutation({
+    mutationFn: async (data: { file_key: string; file_name: string }) => {
+      const response = await axios.post("/api/ingest-source", {
+        ...data,
+        type: "docx",
+        chatbotId: params.chatbotId,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Document added to knowledge base!");
+      setFile(null);
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
+    },
+    onError: (err) => {
+      toast.error("Error adding document");
+      console.error(err);
+    },
+  });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile) {
       setFile(selectedFile);
     } else {
-      alert("Please select a valid document file.");
+      toast.error("Please select a valid document file.");
     }
   }, []);
 
@@ -38,12 +67,27 @@ export default function DocumentUploadDialog() {
     multiple: false,
   });
 
-  const handleSubmit = () => {
-    if (file) {
-      // Here you would typically upload the file to your server
-      console.log("Uploading file:", file.name);
-      // Reset the file state after upload
-      setFile(null);
+  const handleSubmit = async () => {
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("chatbotId", params.chatbotId as string);
+      const data = await uploadToS3(formData);
+
+      if (!data?.file_key || !data.file_name) {
+        toast.error("Something went wrong");
+        return;
+      }
+
+      mutate(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error uploading file");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -67,38 +111,41 @@ export default function DocumentUploadDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Document Upload</DialogTitle>
+          <DialogTitle>Upload Document</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div
             {...getRootProps()}
-            className="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer"
+            className={`border-2 border-dashed rounded-lg p-6 cursor-pointer text-center transition-colors ${
+              isDragActive
+                ? "border-purple-500 bg-purple-50"
+                : "border-gray-300"
+            }`}
           >
             <input {...getInputProps()} />
-            <UploadIcon className="mx-auto mb-2 sm:mb-4 h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
-            <div className="text-sm">
-              {file
-                ? file.name
-                : isDragActive
-                ? "Drop the document here"
-                : "Drag and drop a document here, or tap to select"}
-            </div>
-            <div className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold">
-              {file ? "File selected" : "Upload Document"}
-            </div>
+            {file ? (
+              <p className="text-sm text-muted-foreground">{file.name}</p>
+            ) : isDragActive ? (
+              <p className="text-sm text-muted-foreground">
+                Drop the file here
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Drag & drop a document here, or click to select
+              </p>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Upload document files (DOC, DOCX, ODT, RTF) for the bot to learn
-            from
+            Supported formats: .doc, .docx, .odt, .rtf
           </p>
         </div>
         <Button
           onClick={handleSubmit}
           className="w-full"
-          disabled={!file}
+          disabled={!file || uploading}
           variant="custom"
         >
-          Submit
+          {uploading ? "Uploading..." : "Upload"}
         </Button>
       </DialogContent>
     </Dialog>

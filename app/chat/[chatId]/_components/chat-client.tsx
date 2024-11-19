@@ -14,19 +14,37 @@ import { toolbarPlugin } from "@react-pdf-viewer/toolbar";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import { useChat } from "ai/react";
 import { Switch } from "@/components/ui/switch";
-import { Loader } from "lucide-react";
+import { Loader, Bot, SendHorizontal } from "lucide-react";
 import Toggle from "./toggle";
+import dynamic from "next/dynamic";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-export default function DocumentClient({
-  currentDoc,
-  userImage,
-}: {
+const PDFViewer = dynamic<{ pdfUrl: string }>(
+  () => import("@/app/chat/[chatId]/_components/pdf-viewer"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[90vh] flex items-center justify-center bg-gray-100">
+        Loading PDF viewer...
+      </div>
+    ),
+  }
+);
+
+interface DocumentClientProps {
   currentDoc: {
     id: string;
     fileUrl: string;
   };
   userImage?: string;
-}) {
+}
+
+export default function DocumentClient({
+  currentDoc,
+  userImage,
+}: DocumentClientProps) {
   const toolbarPluginInstance = toolbarPlugin();
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const { renderDefaultToolbar, Toolbar } = toolbarPluginInstance;
@@ -46,29 +64,13 @@ export default function DocumentClient({
   >({});
   const [error, setError] = useState("");
   const [chatOnlyView, setChatOnlyView] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+  const { input, handleInputChange, handleSubmit, messages, isLoading } =
     useChat({
       api: "/api/chat",
-      body: {
-        chatId,
-      },
-      onResponse(response) {
-        const sourcesHeader = response.headers.get("x-sources");
-        const sources = sourcesHeader ? JSON.parse(atob(sourcesHeader)) : [];
-
-        const messageIndexHeader = response.headers.get("x-message-index");
-        if (sources.length && messageIndexHeader !== null) {
-          setSourcesForMessages({
-            ...sourcesForMessages,
-            [messageIndexHeader]: sources,
-          });
-        }
-      },
-      onError: (e) => {
-        setError(e.message);
-      },
-      onFinish() {},
+      body: { chatId },
+      initialMessages: [],
     });
 
   const messageListRef = useRef<HTMLDivElement>(null);
@@ -78,187 +80,181 @@ export default function DocumentClient({
     textAreaRef.current?.focus();
   }, []);
 
-  // Prevent empty chat submissions
-  const handleEnter = (e: any) => {
-    if (e.key === "Enter" && messages) {
-      handleSubmit(e);
-    } else if (e.key == "Enter") {
+  useEffect(() => {
+    const scrollArea = messageListRef.current;
+    if (scrollArea) {
+      const isScrolledToBottom =
+        scrollArea.scrollHeight - scrollArea.scrollTop ===
+        scrollArea.clientHeight;
+      if (!isScrolledToBottom) {
+        setShowScrollButton(true);
+      }
+    }
+  }, [messages]);
+
+  const handleEnter = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && messages) {
       e.preventDefault();
+      handleSubmit(e);
     }
   };
 
-  let userProfilePic = userImage ? userImage : "/profile-icon.png";
-
-  const extractSourcePageNumber = (source: {
-    metadata: Record<string, any>;
-  }) => {
-    return source.metadata["loc.pageNumber"] ?? source.metadata.loc?.pageNumber;
+  const scrollToBottom = () => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+      setShowScrollButton(false);
+    }
   };
+
+  const defaultProfileIcon = "/user-icon.webp";
+
   return (
     <div className="mx-auto flex flex-col no-scrollbar -mt-2">
       <Toggle chatOnlyView={chatOnlyView} setChatOnlyView={setChatOnlyView} />
+
       <div className="flex justify-between w-full lg:flex-row flex-col sm:space-y-20 lg:space-y-0 p-2">
-        {/* Left hand side */}
-        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.js">
-          <div
-            className={`w-full h-[90vh] flex-col text-white !important ${
-              chatOnlyView ? "hidden" : "flex"
-            }`}
-          >
-            <div
-              className="align-center bg-[#eeeeee] flex p-1"
-              style={{
-                borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <Toolbar>{renderDefaultToolbar(transform)}</Toolbar>
-            </div>
-            <Viewer
-              fileUrl={pdfUrl as string}
-              plugins={[toolbarPluginInstance, pageNavigationPluginInstance]}
-            />
-          </div>
-        </Worker>
-        {/* Right hand side */}
-        <div className="flex flex-col w-full justify-between align-center h-[90vh] no-scrollbar">
-          <div
-            className={`w-full min-h-min bg-white border flex justify-center items-center no-scrollbar sm:h-[85vh] h-[80vh]
-            `}
-          >
-            <div
-              ref={messageListRef}
-              className="w-full h-full overflow-y-scroll no-scrollbar rounded-md mt-4"
-            >
-              {messages.length === 0 && (
-                <div className="flex justify-center h-full items-center text-xl">
-                  Ask your first question below!
+        {/* PDF Viewer */}
+        {!chatOnlyView && <PDFViewer pdfUrl={pdfUrl} />}
+
+        {/* Chat Interface */}
+        <Card className="w-full h-[90vh] max-w-4xl">
+          <CardContent className="p-6 flex flex-col h-full">
+            <ScrollArea ref={messageListRef} className="flex-grow pr-4">
+              {messages.length === 0 ? (
+                <div className="flex justify-center items-center h-full text-xl text-gray-500">
+                  <p>Ask your first question below!</p>
                 </div>
-              )}
-              {messages.map((message, index) => {
-                const sources = sourcesForMessages[index] || undefined;
-                const isLastMessage =
-                  !isLoading && index === messages.length - 1;
-                const previousMessages = index !== messages.length - 1;
-                return (
-                  <div key={`chatMessage-${index}`}>
+              ) : (
+                messages.map((message, index) => (
+                  <div
+                    key={`chatMessage-${index}`}
+                    className={`mb-4 ${
+                      message.role === "assistant" ? "mr-12" : "ml-12"
+                    }`}
+                  >
                     <div
-                      className={`p-4 text-black animate ${
+                      className={`flex items-start gap-3 ${
                         message.role === "assistant"
-                          ? "bg-gray-100"
-                          : isLoading && index === messages.length - 1
-                          ? "animate-pulse bg-white"
-                          : "bg-white"
+                          ? "flex-row"
+                          : "flex-row-reverse"
                       }`}
                     >
-                      <div className="flex">
-                        <Image
-                          key={index}
-                          src={
-                            message.role === "assistant"
-                              ? "/bot-icon.png"
-                              : userProfilePic
-                          }
-                          alt="profile image"
-                          width={message.role === "assistant" ? "35" : "33"}
-                          height="30"
-                          className="mr-4 rounded-sm h-full"
-                          priority
-                        />
+                      {message.role === "assistant" ? (
+                        <Avatar>
+                          <AvatarFallback>
+                            <Bot className="w-6 h-6 text-primary" />
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Avatar>
+                          <AvatarImage
+                            src={userImage || defaultProfileIcon}
+                            alt="User"
+                          />
+                          <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div
+                        className={`p-3 rounded-lg ${
+                          message.role === "assistant"
+                            ? "bg-secondary text-secondary-foreground"
+                            : "bg-purple-500 text-primary-foreground"
+                        }`}
+                      >
                         <ReactMarkdown
                           components={{
                             a: ({ node, ...props }) => (
-                              <a target="_blank" {...props} />
+                              <a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline"
+                                {...props}
+                              />
                             ),
                           }}
-                          className="prose"
+                          className="prose max-w-none dark:prose-invert"
                         >
                           {message.content}
                         </ReactMarkdown>
                       </div>
-                      {/* Display the sources */}
-                      {/* {
-                      (isLastMessage || previousMessages) && sources && (
-                        <div className="flex space-x-4 ml-14 mt-3">
-                          {sources
-                            .filter((source: any, index: number, self: any) => {
-                              const pageNumber =
-                                extractSourcePageNumber(source);
-                              // Check if the current pageNumber is the first occurrence in the array
-                              return (
-                                self.findIndex(
-                                  (s: any) =>
-                                    extractSourcePageNumber(s) === pageNumber
-                                ) === index
-                              );
-                            })
-                            .map((source: any) => (
-                              <button
-                                className="border bg-gray-200 px-3 py-1 hover:bg-gray-100 transition rounded-lg"
-                                onClick={() =>
-                                  pageNavigationPluginInstance.jumpToPage(
-                                    Number(extractSourcePageNumber(source)) - 1
-                                  )
-                                }
-                              >
-                                p. {extractSourcePageNumber(source)}
-                              </button>
-                            ))}
-                        </div>
-                      )} */}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex justify-center items-center sm:h-[15vh] h-[20vh]">
-            <form
-              onSubmit={(e) => handleSubmit(e)}
-              className="relative w-full px-4 sm:pt-10 pt-2"
-            >
-              <textarea
-                className="resize-none p-3 pr-10 rounded-md border border-gray-300 bg-white text-black focus:outline-gray-400 w-full"
-                disabled={isLoading}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleEnter}
-                ref={textAreaRef}
-                rows={3}
-                autoFocus={false}
-                maxLength={512}
-                id="userInput"
-                name="userInput"
-                placeholder={
-                  isLoading ? "Waiting for response..." : "Ask me anything..."
-                }
-              />
+                ))
+              )}
+              {isLoading && (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              )}
+            </ScrollArea>
+
+            {showScrollButton && (
               <button
-                type="submit"
-                disabled={isLoading}
-                className="absolute top-[40px] sm:top-[71px] right-6 text-gray-600 bg-transparent py-1 px-2 border-none flex transition duration-300 ease-in-out rounded-sm"
+                onClick={scrollToBottom}
+                className="absolute bottom-20 right-8 bg-primary text-primary-foreground rounded-full p-2 shadow-lg hover:bg-primary/90 transition-colors"
               >
-                {isLoading ? (
-                  <div className="">
-                    <Loader className="w-4 h-4 animate-spin" />
-                  </div>
-                ) : (
-                  <svg
-                    viewBox="0 0 20 20"
-                    className="transform rotate-90 w-6 h-6 fill-current"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-                  </svg>
-                )}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                  />
+                </svg>
               </button>
-            </form>
-          </div>
-          {error && (
-            <div className="border border-red-400 rounded-md p-4">
-              <p className="text-red-500">{error}</p>
+            )}
+
+            {/* Input Area */}
+            <div className="flex justify-center items-center sm:h-[15vh] h-[20vh]">
+              <form
+                onSubmit={handleSubmit}
+                className="relative w-full px-4 sm:pt-10 pt-2"
+              >
+                <textarea
+                  className="resize-none p-4 pr-12 rounded-lg border border-gray-300 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 w-full shadow-sm transition-all duration-200"
+                  disabled={isLoading}
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleEnter}
+                  ref={textAreaRef}
+                  rows={3}
+                  maxLength={512}
+                  id="userInput"
+                  name="userInput"
+                  placeholder={
+                    isLoading ? "Waiting for response..." : "Ask me anything..."
+                  }
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="absolute top-[40px] sm:top-[71px] right-6 text-gray-600 hover:text-gray-900 bg-transparent p-2 rounded-full transition-colors duration-200"
+                >
+                  {isLoading ? (
+                    <Loader className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <SendHorizontal className="w-5 h-5" />
+                  )}
+                </button>
+              </form>
             </div>
-          )}
-        </div>
+
+            {error && (
+              <div className="mx-4 p-4 border border-red-400 rounded-lg bg-red-50">
+                <p className="text-red-600">{error}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,9 +1,13 @@
 import DocumentClient from "./_components/chat-client";
+import Header from "./_components/header";
+import { auth } from "@/utils/auth";
+import UserIcon from "@/public/user-icon.webp";
 
 export default async function Page(props: {
   params: Promise<{ chatId: string }>;
 }) {
   const params = await props.params;
+  const session = await auth();
   //   const user: User | null = await currentUser();
 
   //   const currentDoc = await prisma.document.findFirst({
@@ -18,10 +22,11 @@ export default async function Page(props: {
     title: "Sample Document",
     content: "This is a sample document content",
     fileUrl:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "https://zova.s3.us-east-1.amazonaws.com/84957980-2d0e-4b4f-a2b6-4aea17ee7c01/1731802563499-Documentation.pdf",
   };
+  // https://zova.s3.us-east-1.amazonaws.com/84957980-2d0e-4b4f-a2b6-4aea17ee7c01/1731802563499-Documentation.pdf
 
-  const userImage = "./user-icon.png";
+  const userImage = session?.user?.image || UserIcon.src;
 
   if (!currentDoc) {
     return <div>This document was not found</div>;
@@ -29,6 +34,7 @@ export default async function Page(props: {
 
   return (
     <div>
+      <Header />
       <DocumentClient currentDoc={currentDoc} userImage={userImage} />
     </div>
   );

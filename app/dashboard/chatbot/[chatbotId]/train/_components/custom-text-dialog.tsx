@@ -12,16 +12,42 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
 import TextIcon from "@/public/txt.png";
+import { useParams } from "next/navigation";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function CustomTextDialog() {
+  const params = useParams();
+  const queryClient = useQueryClient();
   const [text, setText] = useState("");
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post("/api/ingest-source", {
+        type: "text",
+        content: text,
+        file_name: "Custom Text",
+        chatbotId: params.chatbotId,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Text added to knowledge base!");
+      setText("");
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
+    },
+    onError: (err) => {
+      toast.error("Error adding text");
+      console.error(err);
+    },
+  });
 
   const handleSubmit = () => {
     if (text.trim()) {
-      // Here you would typically send the text to your server
-      console.log("Submitting text:", text);
-      // Reset the text state after submission
-      setText("");
+      mutate();
     }
   };
 
@@ -61,10 +87,10 @@ export default function CustomTextDialog() {
         <Button
           onClick={handleSubmit}
           className="w-full"
-          disabled={!text.trim()}
+          disabled={!text.trim() || isPending}
           variant="custom"
         >
-          Submit
+          {isPending ? "Adding..." : "Submit"}
         </Button>
       </DialogContent>
     </Dialog>
