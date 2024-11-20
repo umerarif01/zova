@@ -1,4 +1,4 @@
-import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
+import { Pinecone } from "@pinecone-database/pinecone";
 import { downloadFromS3 } from "../s3-server";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { prepareDocument } from "@/utils/ingestion/prepare-document";
@@ -16,7 +16,7 @@ type PDFPage = {
 export async function loadPDFIntoPinecone(
   sourceKey: string,
   chatbotId: string
-) {
+): Promise<number> {
   // 1. Obtain the pdf -> download and read from pdf
   console.log("downloading s3 into file system");
   const fileBuffer = await downloadFromS3(sourceKey);
@@ -35,13 +35,13 @@ export async function loadPDFIntoPinecone(
   // 4. Vectorize and embed individual documents
   const vectors = await Promise.all(documents.flat().map(embedDocument));
 
-  // 5. Upload to pinecone
+  // 5. Upload to Pinecone
   const client = await getPineconeClient();
-  const pineconeIndex = await client.index("zova-02");
+  const pineconeIndex = client.index("zova-02");
   const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
-  console.log("inserting vectors into pinecone");
+  console.log("Inserting vectors into pinecone");
   await namespace.upsert(vectors);
 
-  return documents[0];
+  return vectors.length;
 }

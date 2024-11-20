@@ -72,8 +72,26 @@ export const columns: ColumnDef<KBSource>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as KBSource["status"];
+      const getBgColor = () => {
+        switch (status) {
+          case "failed":
+            return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 hover:bg-red-200 hover:text-red-900";
+          case "completed":
+            return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 hover:bg-green-200 hover:text-green-900";
+          case "processing":
+            return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-200 hover:text-purple-900";
+          default:
+            return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 hover:bg-gray-200 hover:text-gray-900";
+        }
+      };
+
       return (
-        <Badge variant={status === "completed" ? "default" : "secondary"}>
+        <Badge
+          className={`
+            ${getBgColor()}
+            ${status === "processing" ? "animate-pulse" : ""}
+          `}
+        >
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
       );

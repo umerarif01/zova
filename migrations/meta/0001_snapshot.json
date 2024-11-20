@@ -1,6 +1,6 @@
 {
-  "id": "0a7d773f-3701-4f4d-ad42-b24e9c66f10e",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "04f03807-61c8-4396-8698-3c4c2ef6a56f",
+  "prevId": "0a7d773f-3701-4f4d-ad42-b24e9c66f10e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -240,6 +240,75 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.conversation_counts": {
+      "name": "conversation_counts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chatbotId": {
+          "name": "chatbotId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conversation_count": {
+          "name": "conversation_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "conversation_counts_userId_user_id_fk": {
+          "name": "conversation_counts_userId_user_id_fk",
+          "tableFrom": "conversation_counts",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "conversation_counts_chatbotId_chatbots_id_fk": {
+          "name": "conversation_counts_chatbotId_chatbots_id_fk",
+          "tableFrom": "conversation_counts",
+          "tableTo": "chatbots",
+          "columnsFrom": [
+            "chatbotId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.conversations": {
       "name": "conversations",
       "schema": "",
@@ -467,6 +536,76 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.responses": {
+      "name": "responses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chatbotId": {
+          "name": "chatbotId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "daily_responses": {
+          "name": "daily_responses",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "responses_userId_user_id_fk": {
+          "name": "responses_userId_user_id_fk",
+          "tableFrom": "responses",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "responses_chatbotId_chatbots_id_fk": {
+          "name": "responses_chatbotId_chatbots_id_fk",
+          "tableFrom": "responses",
+          "tableTo": "chatbots",
+          "columnsFrom": [
+            "chatbotId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.session": {
       "name": "session",
       "schema": "",
@@ -498,6 +637,75 @@
           "tableTo": "user",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.tokens": {
+      "name": "tokens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chatbotId": {
+          "name": "chatbotId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "daily_tokens": {
+          "name": "daily_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tokens_userId_user_id_fk": {
+          "name": "tokens_userId_user_id_fk",
+          "tableFrom": "tokens",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tokens_chatbotId_chatbots_id_fk": {
+          "name": "tokens_chatbotId_chatbots_id_fk",
+          "tableFrom": "tokens",
+          "tableTo": "chatbots",
+          "columnsFrom": [
+            "chatbotId"
           ],
           "columnsTo": [
             "id"

@@ -30,7 +30,7 @@ export async function getContext(query: string, chatbotId: string) {
   const matches = await getMatchesFromEmbeddings(queryEmbeddings, chatbotId);
 
   const qualifyingDocs = matches.filter(
-    (match) => match.score && match.score > 0.6
+    (match) => match.score && match.score > 0.7
   );
 
   type Metadata = {

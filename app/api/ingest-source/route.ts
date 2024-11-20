@@ -8,7 +8,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/utils/auth";
 import { kbSources } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -18,7 +17,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { file_key, file_name, chatbotId, type, content } = body;
+    const { source_key, source_name, chatbotId, type, content } = body;
 
     if (!chatbotId || typeof chatbotId !== "string") {
       return NextResponse.json({ error: "invalid chatbotId" }, { status: 400 });
@@ -30,28 +29,30 @@ export async function POST(req: Request) {
       .values({
         chatbotId,
         userId: session.user.id,
-        name: file_name,
+        name: source_name || content, // Fallback to content if source_name is null
         type: type,
-        sourceKey: type === "url" ? file_name : file_key || "",
+        sourceKey: type === "url" ? content : source_key || "",
         sourceUrl:
-          type === "url" ? content : file_key ? await getS3Url(file_key) : "",
+          type === "url"
+            ? content
+            : source_key
+            ? await getS3Url(source_key)
+            : "",
         status: "processing",
       } as typeof kbSources.$inferInsert)
       .returning();
-
-    revalidatePath(`/dashboard/chatbot/${chatbotId}/train`);
 
     // Process in background based on type
     let processPromise;
     switch (type) {
       case "pdf":
-        processPromise = loadPDFIntoPinecone(file_key, chatbotId);
+        processPromise = loadPDFIntoPinecone(source_key, chatbotId);
         break;
       case "url":
         processPromise = loadURLIntoPinecone(content, chatbotId);
         break;
       case "docx":
-        processPromise = loadDocxIntoPinecone(file_key, chatbotId);
+        processPromise = loadDocxIntoPinecone(source_key, chatbotId);
         break;
       case "text":
         processPromise = loadTextIntoPinecone(content, chatbotId);
@@ -74,8 +75,6 @@ export async function POST(req: Request) {
           .set({ status: "failed" })
           .where(eq(kbSources.id, source.id));
       });
-
-    revalidatePath(`/dashboard/chatbot/${chatbotId}/train`);
 
     return NextResponse.json({ sourceId: source.id }, { status: 200 });
   } catch (error) {

@@ -7,5 +7,7 @@ export type KBSource = {
   sourceKey: string;
   sourceUrl: string;
   status: "processing" | "completed" | "failed";
+  vectorCount: number;
   createdAt: Date;
+  updatedAt: Date;
 };

@@ -47,26 +47,62 @@ export const kbSources = pgTable("kb_sources", {
 });
 
 export const conversations = pgTable("conversations", {
-  id: text("id").primaryKey(),
+  id: uuid("id").defaultRandom().primaryKey(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   chatbotId: uuid("chatbotId")
     .notNull()
     .references(() => chatbots.id, { onDelete: "cascade" }),
-  firstMessage: text("firstMessage"),
+  firstMessage: text("firstMessage").default("New Conversation"),
   endedAt: timestamp("endedAt"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const messages = pgTable("messages", {
-  id: text("id").primaryKey(),
-  conversationId: text("conversationId")
+  id: uuid("id").defaultRandom().primaryKey(),
+  conversationId: uuid("conversationId")
     .notNull()
     .references(() => conversations.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   role: text("role").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const tokens = pgTable("tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  chatbotId: uuid("chatbotId")
+    .notNull()
+    .references(() => chatbots.id, { onDelete: "cascade" }),
+  dailyTokens: integer("daily_tokens").notNull().default(0),
+  date: timestamp("date", { mode: "date" }).notNull(),
+});
+
+export const responses = pgTable("responses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  chatbotId: uuid("chatbotId")
+    .notNull()
+    .references(() => chatbots.id, { onDelete: "cascade" }),
+  dailyResponses: integer("daily_responses").notNull().default(0),
+  date: timestamp("date").notNull().defaultNow(),
+});
+
+export const conversationCounts = pgTable("conversation_counts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  chatbotId: uuid("chatbotId")
+    .notNull()
+    .references(() => chatbots.id, { onDelete: "cascade" }),
+  conversationCount: integer("conversation_count").notNull().default(0),
+  date: timestamp("date", { mode: "date" }).notNull(),
 });
 
 export const users = pgTable("user", {
@@ -147,8 +183,7 @@ export const authenticators = pgTable(
 );
 
 export type DrizzleConversation = typeof conversations.$inferSelect;
-
 export type DrizzleChatbot = typeof chatbots.$inferSelect;
 export type InsertChatbot = typeof chatbots.$inferInsert;
-
+export type InsertConversation = typeof conversations.$inferInsert;
 export type DrizzleMessage = typeof messages.$inferSelect;

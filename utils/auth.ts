@@ -26,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-      const isOnChat = nextUrl.pathname.startsWith("/chat/1");
+      const isOnChat = nextUrl.pathname.startsWith("/chat");
       const isProtectedRoute = isOnDashboard || isOnChat;
 
       if (isProtectedRoute) {

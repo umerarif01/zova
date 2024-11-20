@@ -14,7 +14,7 @@ export async function loadURLIntoPinecone(url: string, chatbotId: string) {
     // 1. Load and parse webpage
     console.log("loading webpage content from:", url);
     const loader = new CheerioWebBaseLoader(url, {
-      selector: "body", // Select the entire body content
+      selector: "p, h1, h2, h3, h4, h5, h6, table, tr, td, th, li, dl, dt, dd",
     });
     const pages = await loader.load();
 

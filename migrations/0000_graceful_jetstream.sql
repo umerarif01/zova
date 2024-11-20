@@ -46,10 +46,10 @@ CREATE TABLE IF NOT EXISTS "chatbots" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "conversations" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" text NOT NULL,
 	"chatbotId" uuid NOT NULL,
-	"firstMessage" text,
+	"firstMessage" text DEFAULT 'New Conversation',
 	"endedAt" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
@@ -67,8 +67,8 @@ CREATE TABLE IF NOT EXISTS "kb_sources" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "messages" (
-	"id" text PRIMARY KEY NOT NULL,
-	"conversationId" text NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"conversationId" uuid NOT NULL,
 	"content" text NOT NULL,
 	"role" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL

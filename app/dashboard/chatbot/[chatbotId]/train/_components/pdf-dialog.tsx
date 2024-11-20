@@ -24,6 +24,7 @@ export default function PDFUploadDialog() {
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
@@ -35,7 +36,7 @@ export default function PDFUploadDialog() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("PDF added to knowledge base!");
+      toast.success("Your PDF is being processed! Please don't close the app.");
       setFile(null);
       setIsOpen(false);
       queryClient.invalidateQueries({
@@ -66,6 +67,8 @@ export default function PDFUploadDialog() {
   const handleSubmit = async () => {
     if (!file) return;
 
+    setIsUploading(true);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -81,6 +84,8 @@ export default function PDFUploadDialog() {
     } catch (error) {
       console.error(error);
       toast.error("Error uploading file");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -153,13 +158,13 @@ export default function PDFUploadDialog() {
         <Button
           onClick={handleSubmit}
           className="w-full"
-          disabled={!file || isPending}
+          disabled={!file || isPending || isUploading}
           variant="custom"
         >
-          {isPending ? (
+          {isPending || isUploading ? (
             <>
               <Loader className="animate-spin w-4 h-4 mr-2" />
-              Uploading...
+              Uploading PDF
             </>
           ) : (
             "Upload PDF"

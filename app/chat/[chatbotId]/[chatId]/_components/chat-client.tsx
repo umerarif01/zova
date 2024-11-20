@@ -20,9 +20,13 @@ import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useSourceContext } from "./source-context";
+import ContentViewer from "./content-viewer";
+import { useQuery } from "@tanstack/react-query";
+import { getMessages } from "@/drizzle/queries/select";
 
 const PDFViewer = dynamic<{ pdfUrl: string }>(
-  () => import("@/app/chat/[chatId]/_components/pdf-viewer"),
+  () => import("@/app/chat/[chatbotId]/[chatId]/_components/pdf-viewer"),
   {
     ssr: false,
     loading: () => (
@@ -34,30 +38,17 @@ const PDFViewer = dynamic<{ pdfUrl: string }>(
 );
 
 interface DocumentClientProps {
-  currentDoc: {
-    id: string;
-    fileUrl: string;
-  };
   userImage?: string;
+  chatbotId: string;
+  chatId: string;
 }
 
 export default function DocumentClient({
-  currentDoc,
   userImage,
+  chatbotId,
+  chatId,
 }: DocumentClientProps) {
-  const toolbarPluginInstance = toolbarPlugin();
-  const pageNavigationPluginInstance = pageNavigationPlugin();
-  const { renderDefaultToolbar, Toolbar } = toolbarPluginInstance;
-
-  const transform: TransformToolbarSlot = (slot: ToolbarSlot) => ({
-    ...slot,
-    Download: () => <></>,
-    SwitchTheme: () => <></>,
-    Open: () => <></>,
-  });
-
-  const chatId = currentDoc.id;
-  const pdfUrl = currentDoc.fileUrl;
+  const { currentSource } = useSourceContext();
 
   const [sourcesForMessages, setSourcesForMessages] = useState<
     Record<string, any>
@@ -66,12 +57,37 @@ export default function DocumentClient({
   const [chatOnlyView, setChatOnlyView] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const { input, handleInputChange, handleSubmit, messages, isLoading } =
-    useChat({
-      api: "/api/chat",
-      body: { chatId },
-      initialMessages: [],
-    });
+  const { data, isLoading: isLoadingMessages } = useQuery({
+    queryKey: ["chat", chatId],
+    queryFn: async () => {
+      const messages = await getMessages(chatId);
+      return messages.map((msg) => ({
+        ...msg,
+        role: msg.role as "user" | "system",
+      }));
+    },
+  });
+
+  const {
+    input,
+    handleInputChange,
+    handleSubmit: originalHandleSubmit,
+    messages,
+    isLoading,
+  } = useChat({
+    api: "/api/chat",
+    body: { chatId, chatbotId },
+    initialMessages: data || [],
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const currentMessage = input.trim();
+    if (!currentMessage) return;
+
+    // Call original submit handler
+    await originalHandleSubmit(e);
+  };
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -80,22 +96,39 @@ export default function DocumentClient({
     textAreaRef.current?.focus();
   }, []);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    const scrollArea = messageListRef.current;
-    if (scrollArea) {
-      const isScrolledToBottom =
-        scrollArea.scrollHeight - scrollArea.scrollTop ===
-        scrollArea.clientHeight;
-      if (!isScrolledToBottom) {
-        setShowScrollButton(true);
-      }
+    if (messageListRef.current) {
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages]);
+
+  // Check scroll position and show/hide scroll button
+  useEffect(() => {
+    const scrollArea = messageListRef.current;
+    if (!scrollArea) return;
+
+    const handleScroll = () => {
+      const isAtBottom =
+        Math.abs(
+          scrollArea.scrollHeight -
+            scrollArea.scrollTop -
+            scrollArea.clientHeight
+        ) < 50;
+      setShowScrollButton(!isAtBottom);
+    };
+
+    scrollArea.addEventListener("scroll", handleScroll);
+    return () => scrollArea.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleEnter = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && messages) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSubmit(e as any);
     }
   };
 
@@ -105,7 +138,6 @@ export default function DocumentClient({
         top: messageListRef.current.scrollHeight,
         behavior: "smooth",
       });
-      setShowScrollButton(false);
     }
   };
 
@@ -116,14 +148,28 @@ export default function DocumentClient({
       <Toggle chatOnlyView={chatOnlyView} setChatOnlyView={setChatOnlyView} />
 
       <div className="flex justify-between w-full lg:flex-row flex-col sm:space-y-20 lg:space-y-0 p-2">
-        {/* PDF Viewer */}
-        {!chatOnlyView && <PDFViewer pdfUrl={pdfUrl} />}
+        {/* Content Viewer */}
+        {!chatOnlyView &&
+          (currentSource ? (
+            <ContentViewer source={currentSource} />
+          ) : (
+            <div className="w-full h-[90vh] flex items-center justify-center bg-gray-100">
+              Select a source to view content
+            </div>
+          ))}
 
         {/* Chat Interface */}
         <Card className="w-full h-[90vh] max-w-4xl">
           <CardContent className="p-6 flex flex-col h-full">
-            <ScrollArea ref={messageListRef} className="flex-grow pr-4">
-              {messages.length === 0 ? (
+            <ScrollArea
+              ref={messageListRef}
+              className="flex-grow pr-4 overflow-y-auto"
+            >
+              {isLoadingMessages ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : messages.length === 0 ? (
                 <div className="flex justify-center items-center h-full text-xl text-gray-500">
                   <p>Ask your first question below!</p>
                 </div>
@@ -132,23 +178,17 @@ export default function DocumentClient({
                   <div
                     key={`chatMessage-${index}`}
                     className={`mb-4 ${
-                      message.role === "assistant" ? "mr-12" : "ml-12"
+                      message.role === "user" ? "ml-12" : "mr-12"
                     }`}
                   >
                     <div
                       className={`flex items-start gap-3 ${
-                        message.role === "assistant"
-                          ? "flex-row"
-                          : "flex-row-reverse"
+                        message.role === "user"
+                          ? "flex-row-reverse"
+                          : "flex-row"
                       }`}
                     >
-                      {message.role === "assistant" ? (
-                        <Avatar>
-                          <AvatarFallback>
-                            <Bot className="w-6 h-6 text-primary" />
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
+                      {message.role === "user" ? (
                         <Avatar>
                           <AvatarImage
                             src={userImage || defaultProfileIcon}
@@ -156,12 +196,18 @@ export default function DocumentClient({
                           />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
+                      ) : (
+                        <Avatar>
+                          <AvatarFallback>
+                            <Bot className="w-6 h-6 text-primary" />
+                          </AvatarFallback>
+                        </Avatar>
                       )}
                       <div
                         className={`p-3 rounded-lg ${
-                          message.role === "assistant"
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-purple-500 text-primary-foreground"
+                          message.role === "user"
+                            ? "bg-purple-500 text-primary-foreground"
+                            : "bg-secondary text-secondary-foreground"
                         }`}
                       >
                         <ReactMarkdown
