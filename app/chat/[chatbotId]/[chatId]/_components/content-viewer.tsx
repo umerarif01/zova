@@ -64,6 +64,17 @@ export default function ContentViewer({ source }: ContentViewerProps) {
         </div>
       );
 
+    case "url":
+      return (
+        <iframe
+          src={source.sourceUrl}
+          width="100%"
+          height="90vh"
+          frameBorder="0"
+          className="bg-white"
+        />
+      );
+
     default:
       if (officeFormats.includes(fileExtension)) {
         return (
@@ -74,6 +85,9 @@ export default function ContentViewer({ source }: ContentViewerProps) {
             width="100%"
             height="90vh"
             frameBorder="0"
+            className="bg-white"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            title="Office document viewer"
           />
         );
       }

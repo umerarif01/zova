@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { source_key, source_name, chatbotId, type, content } = body;
+    const { file_key, file_name, chatbotId, type, content } = body;
 
     if (!chatbotId || typeof chatbotId !== "string") {
       return NextResponse.json({ error: "invalid chatbotId" }, { status: 400 });
@@ -29,15 +29,11 @@ export async function POST(req: Request) {
       .values({
         chatbotId,
         userId: session.user.id,
-        name: source_name || content, // Fallback to content if source_name is null
+        name: file_name || content, // Fallback to content if file_name is null
         type: type,
-        sourceKey: type === "url" ? content : source_key || "",
+        sourceKey: type === "url" ? content : file_key || "",
         sourceUrl:
-          type === "url"
-            ? content
-            : source_key
-            ? await getS3Url(source_key)
-            : "",
+          type === "url" ? content : file_key ? await getS3Url(file_key) : "",
         status: "processing",
       } as typeof kbSources.$inferInsert)
       .returning();
@@ -46,13 +42,13 @@ export async function POST(req: Request) {
     let processPromise;
     switch (type) {
       case "pdf":
-        processPromise = loadPDFIntoPinecone(source_key, chatbotId);
+        processPromise = loadPDFIntoPinecone(file_key, chatbotId);
         break;
       case "url":
         processPromise = loadURLIntoPinecone(content, chatbotId);
         break;
       case "docx":
-        processPromise = loadDocxIntoPinecone(source_key, chatbotId);
+        processPromise = loadDocxIntoPinecone(file_key, chatbotId);
         break;
       case "text":
         processPromise = loadTextIntoPinecone(content, chatbotId);

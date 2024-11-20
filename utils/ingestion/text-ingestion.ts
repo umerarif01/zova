@@ -16,7 +16,7 @@ export async function loadTextIntoPinecone(text: string, chatbotId: string) {
 
     // 3. Upload to pinecone
     const client = await getPineconeClient();
-    const pineconeIndex = await client.index("zova-01");
+    const pineconeIndex = await client.index("zova-02");
     const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
     console.log("inserting vectors into pinecone");

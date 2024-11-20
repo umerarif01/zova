@@ -57,7 +57,7 @@ export async function getResponsesAnalytics(chatbotId: string) {
   return chartData;
 }
 
-export async function getConversationAnalytics() {
+export async function getConversationAnalytics(chatbotId: string) {
   const session = await auth();
   if (!session?.user) {
     throw new Error("You must be signed in to use this");
@@ -69,13 +69,17 @@ export async function getConversationAnalytics() {
       chats: conversationCounts.conversationCount,
     })
     .from(conversationCounts)
-    .where(eq(conversationCounts.userId, session.user.id as string));
+    .where(
+      and(
+        eq(conversationCounts.chatbotId, chatbotId),
+        eq(conversationCounts.userId, session.user.id as string)
+      )
+    );
 
   const chartData = result.map((row) => ({
     date: row.date.toISOString().split("T")[0],
     chats: row.chats,
   }));
 
-  console.log(chartData);
   return chartData;
 }

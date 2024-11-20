@@ -30,7 +30,7 @@ export function ChatbotChatsChart({ chatbotId }: { chatbotId: string }) {
   const { data: chartData = [] } = useQuery({
     queryKey: ["chatbot-chats", chatbotId],
     queryFn: async () => {
-      return await getConversationAnalytics();
+      return await getConversationAnalytics(chatbotId);
     },
   });
 

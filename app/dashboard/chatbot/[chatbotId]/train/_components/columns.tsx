@@ -18,6 +18,79 @@ import axios from "axios";
 import { toast } from "sonner";
 import { deleteSource as deleteSourceAction } from "@/utils/actions/data-sources";
 
+// Create a new component for the actions cell
+const ActionsCell = ({ source }: { source: KBSource }) => {
+  const queryClient = useQueryClient();
+
+  const { mutate: resyncSource, isPending: isResyncing } = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(`/api/sources/${source.id}/resync`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Resync started");
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+    },
+    onError: () => {
+      toast.error("Failed to resync source");
+    },
+  });
+
+  const { mutate: deleteSource, isPending: isDeleting } = useMutation({
+    mutationFn: async () => {
+      const sourceId = source.id;
+      if (!sourceId) {
+        throw new Error("Source ID is required");
+      }
+      return await deleteSourceAction(sourceId);
+    },
+    onSuccess: () => {
+      toast.success("Source deleted");
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+    },
+    onError: () => {
+      toast.error("Failed to delete source");
+    },
+  });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => resyncSource()}
+          disabled={isResyncing || source.status === "processing"}
+        >
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${isResyncing ? "animate-spin" : ""}`}
+          />
+          {isResyncing ? "Resyncing..." : "Resync source"}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            if (
+              window.confirm("Are you sure you want to delete this source?")
+            ) {
+              deleteSource();
+            }
+          }}
+          disabled={isDeleting}
+          className="text-red-600"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          {isDeleting ? "Deleting..." : "Delete source"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 export const columns: ColumnDef<KBSource>[] = [
   {
     id: "select",
@@ -99,79 +172,6 @@ export const columns: ColumnDef<KBSource>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const source = row.original;
-      const queryClient = useQueryClient();
-
-      const { mutate: resyncSource, isPending: isResyncing } = useMutation({
-        mutationFn: async () => {
-          const response = await axios.post(`/api/sources/${source.id}/resync`);
-          return response.data;
-        },
-        onSuccess: () => {
-          toast.success("Resync started");
-          queryClient.invalidateQueries({ queryKey: ["sources"] });
-        },
-        onError: () => {
-          toast.error("Failed to resync source");
-        },
-      });
-
-      const { mutate: deleteSource, isPending: isDeleting } = useMutation({
-        mutationFn: async () => {
-          const sourceId = source.id;
-
-          if (!sourceId) {
-            throw new Error("Source ID is required");
-          }
-
-          return await deleteSourceAction(sourceId);
-        },
-        onSuccess: () => {
-          toast.success("Source deleted");
-          queryClient.invalidateQueries({ queryKey: ["sources"] });
-        },
-        onError: () => {
-          toast.error("Failed to delete source");
-        },
-      });
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => resyncSource()}
-              disabled={isResyncing || source.status === "processing"}
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${isResyncing ? "animate-spin" : ""}`}
-              />
-              {isResyncing ? "Resyncing..." : "Resync source"}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                if (
-                  window.confirm("Are you sure you want to delete this source?")
-                ) {
-                  deleteSource();
-                }
-              }}
-              disabled={isDeleting}
-              className="text-red-600"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {isDeleting ? "Deleting..." : "Delete source"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <ActionsCell source={row.original} />,
   },
 ];

@@ -14,7 +14,7 @@ import {
 export function AnalyticsCharts({ chatbotId }: { chatbotId: string }) {
   const chatsQuery = useQuery({
     queryKey: ["chatbot-chats", chatbotId],
-    queryFn: async () => getConversationAnalytics(),
+    queryFn: async () => getConversationAnalytics(chatbotId),
   });
 
   const responsesQuery = useQuery({
