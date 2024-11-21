@@ -1,5 +1,10 @@
-import { Pool } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-const client = new Pool({ connectionString: process.env.DATABASE_URL! });
-export const db = drizzle(client);
+// neonConfig.fetchConnectionCache = true;
+
+const sql = neon(process.env.DATABASE_URL!);
+// export const db = drizzle(sql);
+export const db = drizzle(sql);
+
+export * from "drizzle-orm";

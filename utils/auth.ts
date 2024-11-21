@@ -25,16 +25,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-      const isOnChat = nextUrl.pathname.startsWith("/chat");
-      const isProtectedRoute = isOnDashboard || isOnChat;
+      const paths = ["/dashboard", "/chat"];
+      const isProtected = paths.some((path) =>
+        nextUrl.pathname.startsWith(path)
+      );
 
-      if (isProtectedRoute) {
-        if (isLoggedIn) return true;
-        return false;
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+      if (isProtected && !isLoggedIn) {
+        const redirectUrl = new URL("api/auth/signin", nextUrl.origin);
+        redirectUrl.searchParams.append("callbackUrl", nextUrl.href);
+        return Response.redirect(redirectUrl);
       }
+
       return true;
     },
     session({ session, user }) {

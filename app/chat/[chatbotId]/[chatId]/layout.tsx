@@ -5,5 +5,5 @@ interface ChatLayoutProps {
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  return { children };
+  return <>{children}</>;
 }

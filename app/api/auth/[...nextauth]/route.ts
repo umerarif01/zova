@@ -1,3 +1,3 @@
-import { handlers } from "@/utils/auth"; // Referring to the auth.ts we just created
+import { handlers } from "@/utils/auth";
 
 export const { GET, POST } = handlers;
