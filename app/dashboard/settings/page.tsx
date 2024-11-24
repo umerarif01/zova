@@ -15,7 +15,7 @@ export default function Settings() {
         <h2 className="mt-8 scroll-m-20 border-b pb-2 w-full text-3xl font-semibold tracking-tight transition-colors first:mt-0">
           General Settings
         </h2>
-        <div className=" flex flex-col gap-3">
+        <div className=" flex flex-col gap-5">
           <SubscriptionCard />
           <UserProfileCard session={session} />
         </div>

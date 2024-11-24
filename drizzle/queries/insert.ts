@@ -6,6 +6,7 @@ import {
   conversations,
   InsertChatbot,
   InsertConversation,
+  subscriptions,
 } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
@@ -69,3 +70,23 @@ export const createConversation = async ({
     };
   }
 };
+
+export async function insertUserSubscription(data: {
+  userId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  stripeProductId: string;
+  planName: string;
+  subscriptionStatus: string;
+}) {
+  const [result] = await db
+    .insert(subscriptions)
+    .values({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return result;
+}

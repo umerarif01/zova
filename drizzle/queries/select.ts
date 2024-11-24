@@ -7,6 +7,7 @@ import {
   kbSources,
   messages as _messages,
   tokens,
+  subscriptions,
 } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
@@ -119,4 +120,16 @@ export async function getTokens(chatbotId: string) {
         eq(tokens.userId, session.user.id as string)
       )
     );
+}
+
+export async function getUserSubscriptionByStripeCustomerId(
+  customerId: string
+) {
+  const result = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.stripeCustomerId, customerId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
 }

@@ -10,6 +10,7 @@ import {
   pgEnum,
   uuid,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const userSystemEnum = pgEnum("user_system_enum", ["system", "user"]);
 
@@ -129,6 +130,13 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
 export const accounts = pgTable(
   "account",
   {
@@ -201,3 +209,12 @@ export type DrizzleChatbot = typeof chatbots.$inferSelect;
 export type InsertChatbot = typeof chatbots.$inferInsert;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type DrizzleMessage = typeof messages.$inferSelect;
+export type DrizzleUser = typeof users.$inferSelect;
+export type DrizzleSubscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+export type DrizzleAuthenticator = typeof authenticators.$inferSelect;
+export type InsertAuthenticator = typeof authenticators.$inferInsert;
+export type DrizzleSession = typeof sessions.$inferSelect;
+export type InsertSession = typeof sessions.$inferInsert;
+export type DrizzleVerificationToken = typeof verificationTokens.$inferSelect;
+export type InsertVerificationToken = typeof verificationTokens.$inferInsert;

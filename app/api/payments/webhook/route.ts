@@ -1,6 +1,9 @@
 import Stripe from "stripe";
-// import { handleSubscriptionChange, stripe } from "@/lib/payments/stripe";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  handleCheckoutSessionCompleted,
+  handleSubscriptionChange,
+} from "@/utils/payments/stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -23,10 +26,15 @@ export async function POST(request: NextRequest) {
   }
 
   switch (event.type) {
+    case "checkout.session.completed":
+      const session = event.data.object as Stripe.Checkout.Session;
+      const metadata: any = session?.metadata;
+      await handleCheckoutSessionCompleted(session, metadata?.userId);
+      break;
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
       const subscription = event.data.object as Stripe.Subscription;
-      // await handleSubscriptionChange(subscription);
+      await handleSubscriptionChange(subscription);
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
