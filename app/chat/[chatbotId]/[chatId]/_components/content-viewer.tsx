@@ -69,7 +69,8 @@ export default function ContentViewer({ source }: ContentViewerProps) {
         <iframe
           src={source.sourceUrl}
           width="100%"
-          height="90vh"
+          height="100%"
+          style={{ minHeight: "90vh" }}
           frameBorder="0"
           className="bg-white"
         />

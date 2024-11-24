@@ -15,6 +15,13 @@
       "when": 1732070863868,
       "tag": "0001_naive_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1732425821351,
+      "tag": "0002_marvelous_spyke",
+      "breakpoints": true
     }
   ]
 }

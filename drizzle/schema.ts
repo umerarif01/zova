@@ -115,6 +115,20 @@ export const users = pgTable("user", {
   image: text("image"),
 });
 
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  stripeProductId: text("stripe_product_id"),
+  planName: varchar("plan_name", { length: 50 }),
+  subscriptionStatus: varchar("subscription_status", { length: 20 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const accounts = pgTable(
   "account",
   {

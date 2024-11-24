@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { toast } from "sonner";
 import { TITLE_TAILWIND_CLASS } from "@/utils/constants";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 type PricingSwitchProps = {
   onSwitch: (value: string) => void;
@@ -84,6 +85,17 @@ const PricingCard = ({
   exclusive,
 }: PricingCardProps) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = async () => {
+    setIsLoading(true);
+    try {
+      await handleCheckout(isYearly ? priceIdYearly : priceIdMonthly, true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card
       className={cn(
@@ -148,12 +160,17 @@ const PricingCard = ({
       </div>
       <CardFooter className="mt-2">
         <Button
-          onClick={() => {}}
+          onClick={handleClick}
+          disabled={isLoading}
           className="relative inline-flex w-full items-center justify-center rounded-md bg-black text-white dark:bg-white px-6 font-medium dark:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
           type="button"
         >
           <div className="absolute -inset-0.5 -z-10 rounded-lg bg-gradient-to-b fr om-[#c7d2fe] to-[#8678f9] opacity-75 blur" />
-          {actionLabel}
+          {isLoading ? (
+            <Loader className="w-4 h-4 animate-spin" />
+          ) : (
+            actionLabel
+          )}
         </Button>
       </CardFooter>
     </Card>
@@ -171,13 +188,45 @@ export default function Pricing() {
   const [isYearly, setIsYearly] = useState<boolean>(false);
   const togglePricingPeriod = (value: string) =>
     setIsYearly(parseInt(value) === 1);
-  // const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
+  const session = useSession();
+  const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
 
-  // useEffect(() => {
-  //   setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
-  // }, []);
+  useEffect(() => {
+    setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
+  }, []);
 
-  const handleCheckout = async (priceId: string, subscription: boolean) => {};
+  const handleCheckout = async (priceId: string, subscription: boolean) => {
+    try {
+      const { data } = await axios.post(
+        `/api/payments/create-checkout-session`,
+        {
+          userId: session.data?.user?.id,
+          email: session.data?.user?.email,
+          priceId,
+
+          subscription,
+        }
+      );
+
+      if (data.sessionId) {
+        const stripe = await stripePromise;
+
+        const response = await stripe?.redirectToCheckout({
+          sessionId: data.sessionId,
+        });
+
+        return response;
+      } else {
+        console.error("Failed to create checkout session");
+        toast("Failed to create checkout session");
+        return;
+      }
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      toast("Error during checkout");
+      return;
+    }
+  };
 
   const plans = [
     {
@@ -191,8 +240,8 @@ export default function Pricing() {
         "50 sources",
         "GPT-4o-mini AI model",
       ],
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+      priceIdMonthly: "",
+      priceIdYearly: "",
       actionLabel: "Get Started",
     },
     {
@@ -209,8 +258,9 @@ export default function Pricing() {
         "Claude 3.5 Sonnet AI model",
       ],
       actionLabel: "Get Started",
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+      priceIdMonthly:
+        process.env.NEXT_PUBLIC_STRIPE_BASIC_PLAN_MONTHLY_PRICE_ID,
+      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_BASIC_PLAN_YEARLY_PRICE_ID,
       popular: true,
     },
     {
@@ -219,16 +269,16 @@ export default function Pricing() {
       yearlyPrice: 290,
       description: "For more Agents",
       features: [
-        "Unlimited Agents",
-        "Unlimited messages / mo",
-        "Unlimited sources",
+        "5 Agents",
+        "1000 messages / mo",
+        "300 sources",
         "GPT-4o-mini AI model ",
         "GPT-4o AI model",
         "Claude 3.5 Sonnet AI model",
       ],
       actionLabel: "Get Started",
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRO_PLAN_MONTHLY_PRICE_ID,
+      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRO_PLAN_YEARLY_PRICE_ID,
       exclusive: true,
     },
   ];
