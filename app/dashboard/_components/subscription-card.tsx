@@ -1,22 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DrizzleSubscription } from "@/drizzle/schema";
+import { customerPortalAction } from "@/utils/payments/actions";
 
-export default function SubscriptionCard() {
+interface SubscriptionCardProps {
+  userSubscription: DrizzleSubscription;
+}
+
+export default function SubscriptionCard({
+  userSubscription,
+}: SubscriptionCardProps) {
+  const isSubscribed = userSubscription?.subscriptionStatus === "active";
+  const planName = isSubscribed ? userSubscription?.planName : "Free";
+
   return (
     <Card className="w-full">
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold">
           Team Subscription
         </CardTitle>
-        <Button variant="outline" size="sm">
-          Manage Subscription
-        </Button>
+        <form action={customerPortalAction}>
+          <Button type="submit" variant="outline">
+            Manage Subscription
+          </Button>
+        </form>
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          <h3 className="text-base font-medium">Current Plan: Free</h3>
+          <h3 className="text-base font-medium">Current Plan: {planName}</h3>
           <p className="text-sm text-muted-foreground">
-            No active subscription
+            {isSubscribed ? "Active subscription" : "No active subscription"}
           </p>
         </div>
       </CardContent>

@@ -133,3 +133,13 @@ export async function getUserSubscriptionByStripeCustomerId(
 
   return result.length > 0 ? result[0] : null;
 }
+
+export async function getUserSubscriptionByUserId(userId: string) {
+  const result = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}

@@ -1,9 +1,13 @@
 import { insertUserSubscription } from "@/drizzle/queries/insert";
-import { getUserSubscriptionByStripeCustomerId } from "@/drizzle/queries/select";
+import {
+  getUserSubscriptionByStripeCustomerId,
+  getUserSubscriptionByUserId,
+} from "@/drizzle/queries/select";
 import { updateUserSubscription } from "@/drizzle/queries/update";
 import Stripe from "stripe";
 import { redirect } from "next/navigation";
 import { DrizzleSubscription } from "@/drizzle/schema";
+import { auth } from "../auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -87,7 +91,7 @@ export async function createCustomerPortalSession(
   subscription: DrizzleSubscription
 ) {
   if (!subscription.stripeCustomerId || !subscription.stripeProductId) {
-    redirect("/#pricing");
+    redirect("/");
   }
 
   let configuration: Stripe.BillingPortal.Configuration;
@@ -100,7 +104,7 @@ export async function createCustomerPortalSession(
       subscription.stripeProductId
     );
     if (!product.active) {
-      throw new Error("Team's product is not active in Stripe");
+      throw new Error("Product is not active in Stripe");
     }
 
     const prices = await stripe.prices.list({
@@ -147,7 +151,7 @@ export async function createCustomerPortalSession(
 
   return stripe.billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/dashboard`,
+    return_url: `${process.env.AUTH_URL}/dashboard`,
     configuration: configuration.id,
   });
 }

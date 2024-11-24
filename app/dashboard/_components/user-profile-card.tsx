@@ -24,19 +24,11 @@ export default function UserProfileCard({ session }: UserProfileCardProps) {
       <CardContent className="space-y-4 pt-1">
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            disabled
-            defaultValue={session?.data?.user?.name ?? ""}
-          />
+          <Input id="name" disabled defaultValue={session.user.name ?? ""} />
         </div>
         <div className="space-y-3">
           <Label htmlFor="email">E-mail</Label>
-          <Input
-            id="email"
-            disabled
-            defaultValue={session?.data?.user?.email ?? ""}
-          />
+          <Input id="email" disabled defaultValue={session.user.email ?? ""} />
         </div>
       </CardContent>
       <CardFooter>
