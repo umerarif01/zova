@@ -1,14 +1,22 @@
 "use client";
 
 import { ChatbotWindow } from "@/app/widget/_components/window";
-import { useSearchParams } from "next/dist/client/components/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { getChatbotByIdWithoutUserId } from "@/drizzle/queries/select";
+import { Suspense } from "react";
 
-export default function WidgetPage() {
+function WidgetContent() {
   const searchParams = useSearchParams();
   const chatbotId = searchParams.get("chatbotId");
+
+  // Move the query logic into the hook, and handle no chatbotId scenario separately
+  const { isLoading, error, data } = useQuery({
+    queryKey: ["chatbot", chatbotId],
+    queryFn: () => getChatbotByIdWithoutUserId(chatbotId!),
+    enabled: !!chatbotId, // ensures the query only runs if chatbotId is truthy
+  });
 
   if (!chatbotId) {
     return (
@@ -17,12 +25,6 @@ export default function WidgetPage() {
       </div>
     );
   }
-
-  const { isLoading, error, data } = useQuery({
-    queryKey: ["chatbot", chatbotId],
-    queryFn: () => getChatbotByIdWithoutUserId(chatbotId),
-    enabled: !!chatbotId,
-  });
 
   if (isLoading) {
     return (
@@ -61,5 +63,13 @@ export default function WidgetPage() {
         textColor={chatbot.textColor ?? undefined}
       />
     </div>
+  );
+}
+
+export default function WidgetPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WidgetContent />
+    </Suspense>
   );
 }

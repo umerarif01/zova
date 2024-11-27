@@ -6,13 +6,20 @@ import { SearchBar } from "../_components/search-bar";
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams?: {
-    query?: string;
-    page?: number;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const query = searchParams?.query || "";
-  const page = searchParams?.page || undefined;
+  const query = (await searchParams).query;
+  const page = (await searchParams).page;
+
+  // Ensure query is a string or fallback to an empty string
+  const queryString = Array.isArray(query) ? query[0] : query ?? "";
+
+  // Ensure page is a number or fallback to 1
+  const pageNumber = page
+    ? Array.isArray(page)
+      ? parseInt(page[0], 10)
+      : parseInt(page, 10)
+    : 1;
 
   return (
     <div className="flex flex-col justify-center items-start flex-wrap px-4 pt-4 gap-4">
@@ -28,7 +35,7 @@ export default async function UsersPage({
           </div>
         }
       >
-        <UsersTable query={query} page={page} />
+        <UsersTable query={queryString} page={pageNumber} />
       </Suspense>
     </div>
   );
