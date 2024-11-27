@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: `%s | Zova.chat`,
   },
   description:
-    "Train agents using your PDFs, Word documents, websites, and more. Empower them to deliver accurate, data-driven insights tailored to your needs",
+    "Train chatbots using your PDFs, Word documents, websites, and more. Empower them to deliver accurate, data-driven insights tailored to your needs",
 };
 
 export default function RootLayout({

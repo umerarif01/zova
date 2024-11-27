@@ -17,9 +17,17 @@ export default async function Settings() {
 
   const userSubscription = await getUserSubscriptionByUserId(session?.user.id);
 
-  if (!userSubscription) {
-    throw new Error("User Subscription not found");
-  }
+  const subscriptionData = userSubscription || {
+    id: "",
+    userId: session.user.id,
+    createdAt: new Date(),
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    stripeProductId: null,
+    planName: null,
+    subscriptionStatus: null,
+    updatedAt: new Date(),
+  };
 
   return (
     <div className="flex justify-start items-center flex-wrap px-4 pt-5 gap-4">
@@ -28,7 +36,7 @@ export default async function Settings() {
           General Settings
         </h2>
         <div className=" flex flex-col gap-5">
-          <SubscriptionCard userSubscription={userSubscription} />
+          <SubscriptionCard userSubscription={subscriptionData} />
           <UserProfileCard session={session} />
         </div>
       </div>

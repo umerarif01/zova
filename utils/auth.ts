@@ -21,11 +21,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  providers: [Google],
+  providers: [
+    Google({
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: profile.role ?? "user",
+        };
+      },
+    }),
+  ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const paths = ["/dashboard", "/chat"];
+      const paths = ["/dashboard", "/chat", "/admin"];
       const isProtected = paths.some((path) =>
         nextUrl.pathname.startsWith(path)
       );
@@ -40,6 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     session({ session, user }) {
       session.user.id = user.id;
+      session.user.role = user.role;
       return session;
     },
   },

@@ -11,10 +11,9 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { AdapterAccountType } from "next-auth/adapters";
 
 export const userSystemEnum = pgEnum("user_system_enum", ["system", "user"]);
-
-import type { AdapterAccountType } from "next-auth/adapters";
 
 export const sourceStatusEnum = pgEnum("source_status_enum", [
   "processing",
@@ -28,6 +27,13 @@ export const chatbots = pgTable("chatbots", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  icon: text("icon"),
+  welcomeMessage: text("welcomeMessage").default(
+    "Hi! How can I help you today? 👋"
+  ),
+  model: text("model").default("gpt-4o-mini"),
+  background: text("background").default("#a855f7"),
+  textColor: text("textColor").default("#000000"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -114,6 +120,10 @@ export const users = pgTable("user", {
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  role: text("role"),
+  noOfChatbots: integer("no_of_chatbots").notNull().default(0),
+  noOfTokens: integer("no_of_tokens").notNull().default(0),
+  noOfKnowledgeSources: integer("no_of_knowledge_sources").notNull().default(0),
 });
 
 export const subscriptions = pgTable("subscriptions", {
@@ -128,6 +138,19 @@ export const subscriptions = pgTable("subscriptions", {
   subscriptionStatus: varchar("subscription_status", { length: 20 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const recentSubscriptions = pgTable("recent_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  stripeProductId: text("stripe_product_id"),
+  planName: varchar("plan_name", { length: 50 }),
+  subscriptionStatus: varchar("subscription_status", { length: 20 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({

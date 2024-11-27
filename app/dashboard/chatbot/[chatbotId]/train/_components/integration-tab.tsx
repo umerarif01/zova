@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { Copy } from "lucide-react";
 import { ChatbotConfig } from "./chatbot-integration";
+import { toast } from "sonner";
 
 type IntegrationTabProps = {
   config: ChatbotConfig;
@@ -24,35 +25,48 @@ export default function IntegrationTab({
   setConfig,
 }: IntegrationTabProps) {
   const generateScriptTag = () => {
-    return `<script>
-  (function(w,d,s,o,f,js,fjs){
-    w['MyChat']=o;w[o] = w[o] || function() { (w[o].q = w[o].q || []).push(arguments) };
-    js = d.createElement(s), fjs = d.getElementsByTagName(s)[0];
-    js.id = o; js.src = f; js.async = 1; fjs.parentNode.insertBefore(js, fjs);
-  }(window, document, 'script', 'myChatbot', 'https://chatbot-script.com/widget.js'));
-  myChatbot('init', { 
-    botName: '${config.botName}',
-    welcomeMessage: '${config.welcomeMessage}',
-    primaryColor: '${config.primaryColor}',
-    secondaryColor: '${config.secondaryColor}',
-    typingIndicator: ${config.isTypingIndicatorOn},
-    sound: ${config.isSoundOn}
-  });
-</script>`;
+    return `const iframe = document.createElement("iframe");
+    
+    const iframeStyles = (styleString) => {
+    const style = document.createElement('style');
+    style.textContent = styleString;
+    document.head.append(style);
+    }
+    
+    iframeStyles('
+        .chat-frame {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            border: none;
+        }
+    ')
+    
+    iframe.src = "http://localhost:3000/chatbot"
+    iframe.classList.add('chat-frame')
+    document.body.appendChild(iframe)
+    
+    window.addEventListener("message", (e) => {
+        if(e.origin !== "http://localhost:3000") return null
+        let dimensions = JSON.parse(e.data)
+        iframe.width = dimensions.width
+        iframe.height = dimensions.height
+        iframe.contentWindow.postMessage("{id}", "http://localhost:3000/")
+    })`;
   };
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Script Tag Integration</CardTitle>
+          <CardTitle>Website Integration</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-muted-foreground text-sm">
             To integrate the chatbot into your website, follow these steps:
           </p>
           <ol className="list-decimal list-inside mb-4 text-muted-foreground text-sm">
-            <li>Copy the script tag below.</li>
+            <li>Copy the iframe code below.</li>
             <li>
               Paste it into the HTML of your website, preferably within the
               &lt;head&gt; tag.
@@ -69,7 +83,10 @@ export default function IntegrationTab({
           />
           <Button
             className="mt-2"
-            onClick={() => navigator.clipboard.writeText(generateScriptTag())}
+            onClick={() => {
+              navigator.clipboard.writeText(generateScriptTag());
+              toast("Copied to clipboard");
+            }}
             variant={"custom"}
           >
             <Copy className="mr-2 h-4 w-4" /> Copy to Clipboard
@@ -105,26 +122,6 @@ export default function IntegrationTab({
                     setConfig({ ...config, welcomeMessage: e.target.value })
                   }
                 />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="typing-indicator"
-                  checked={config.isTypingIndicatorOn}
-                  onCheckedChange={(checked) =>
-                    setConfig({ ...config, isTypingIndicatorOn: checked })
-                  }
-                />
-                <Label htmlFor="typing-indicator">Typing Indicator</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="sound"
-                  checked={config.isSoundOn}
-                  onCheckedChange={(checked) =>
-                    setConfig({ ...config, isSoundOn: checked })
-                  }
-                />
-                <Label htmlFor="sound">Sound</Label>
               </div>
             </div>
           </AccordionContent>

@@ -11,6 +11,7 @@ import {
 import { db } from "../db";
 import { auth } from "@/utils/auth";
 import { incrementConversationCount } from "@/utils/analytics/update";
+import { getUserIdFromChatbot } from "./select";
 
 export async function createChatbot(data: InsertChatbot) {
   try {
@@ -70,6 +71,44 @@ export const createConversation = async ({
     };
   }
 };
+
+export async function createConversationWithoutUserId(chatbotId: string) {
+  try {
+    console.log("chatbotId", chatbotId);
+
+    const userId = await getUserIdFromChatbot(chatbotId);
+
+    if (!userId) {
+      console.error("user id not found");
+      return;
+    }
+
+    const newConversation = await db
+      .insert(conversations)
+      .values({
+        userId,
+        chatbotId,
+      })
+      .returning();
+
+    if (newConversation[0]) {
+      // Update the conversation count
+      await incrementConversationCount(userId, chatbotId);
+
+      return {
+        success: true,
+        message: "Conversation created successfully",
+        id: newConversation[0].id,
+      };
+    }
+  } catch (error) {
+    console.error("Error creating conversation:", error);
+    return {
+      success: false,
+      message: "An error occurred while creating the conversation",
+    };
+  }
+}
 
 export async function insertUserSubscription(data: {
   userId: string;

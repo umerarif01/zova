@@ -14,7 +14,7 @@ export async function customerPortalAction() {
   const userSubscription = await getUserSubscriptionByUserId(session.user.id);
 
   if (!userSubscription) {
-    throw new Error("No subscription found");
+    redirect("/pricing");
   }
 
   const portalSession = await createCustomerPortalSession(userSubscription);

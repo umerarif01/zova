@@ -9,13 +9,28 @@ import {
   incrementResponseCount,
   incrementTokenCount,
 } from "@/utils/analytics/update";
+import { createConversationWithoutUserId } from "@/drizzle/queries/insert";
 
 export const runtime = "edge";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { messages, chatId, chatbotId } = await req.json();
+    const { messages, chatId: initialChatId, chatbotId } = await req.json();
+
+    let chatId = initialChatId;
+
+    if (!chatId) {
+      const result = await createConversationWithoutUserId(chatbotId);
+      if (result?.success && result.id) {
+        chatId = result.id;
+      } else {
+        return NextResponse.json(
+          { error: "An error occurred while processing your request" },
+          { status: 500 }
+        );
+      }
+    }
 
     //Check if chat exists
     const _chats = await db
@@ -75,5 +90,11 @@ export async function POST(req: Request) {
     });
 
     return result.toDataStreamResponse();
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error in chat route:", error);
+    return NextResponse.json(
+      { error: "An error occurred while processing your request" },
+      { status: 500 }
+    );
+  }
 }

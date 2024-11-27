@@ -1,6 +1,6 @@
 "use server";
 
-import { sql, count, eq, and } from "drizzle-orm";
+import { sql, count, eq, and, or, like, asc } from "drizzle-orm";
 import {
   chatbots,
   conversations,
@@ -8,6 +8,7 @@ import {
   messages as _messages,
   tokens,
   subscriptions,
+  users,
 } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
@@ -32,6 +33,24 @@ export async function getChatbots() {
     .leftJoin(kbSources, eq(kbSources.chatbotId, chatbots.id))
     .groupBy(chatbots.id)
     .where(eq(chatbots.userId, session.user.id as string));
+}
+
+export async function getChatbotById(chatbotId: string) {
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error("You must be signed in to use this");
+  }
+
+  return await db
+    .select()
+    .from(chatbots)
+    .where(
+      and(
+        eq(chatbots.id, chatbotId),
+        eq(chatbots.userId, session.user.id as string)
+      )
+    );
 }
 
 export async function getConversations(chatbotId: string) {
@@ -142,4 +161,104 @@ export async function getUserSubscriptionByUserId(userId: string) {
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
+}
+
+export async function getUserIdFromChatbot(chatbotId: string) {
+  try {
+    const result = await db
+      .select({
+        userId: chatbots.userId,
+      })
+      .from(chatbots)
+      .where(eq(chatbots.id, chatbotId));
+
+    console.log(result);
+
+    if (!result.length) {
+      throw new Error(`No chatbot found with id: ${chatbotId}`);
+    }
+
+    if (!result[0].userId) {
+      throw new Error(`No userId found for chatbot: ${chatbotId}`);
+    }
+
+    return result[0].userId;
+  } catch (error) {
+    console.error("Error getting userId from chatbot:", error);
+    throw error;
+  }
+}
+
+export async function getChatbotByIdWithoutUserId(chatbotId: string) {
+  return await db
+    .select({
+      name: chatbots.name,
+      welcomeMessage: chatbots.welcomeMessage,
+      background: chatbots.background,
+      textColor: chatbots.textColor,
+    })
+    .from(chatbots)
+    .where(and(eq(chatbots.id, chatbotId)));
+}
+
+export async function getTotalUserCount(searchTerm: string = "") {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  if (session.user.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await db
+    .select({
+      totalUsers: count(),
+    })
+    .from(users)
+    .where(
+      or(
+        like(users.name, `%${searchTerm}%`),
+        like(users.email, `%${searchTerm}%`)
+      )
+    );
+
+  return result[0].totalUsers;
+}
+
+export async function selectAllUsers(
+  page: number,
+  pageSize: number,
+  searchTerm: string = ""
+) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  if (session.user.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  // Calculate the offset
+  const offset = (page - 1) * pageSize;
+
+  const result = await db
+    .select()
+    .from(users)
+    .where(
+      and(
+        or(
+          like(users.name, `%${searchTerm}%`),
+          like(users.email, `%${searchTerm}%`)
+        )
+      )
+    )
+    .orderBy(asc(users.id)) // Ensure ordering
+    .limit(pageSize)
+    .offset(offset); // Apply offset for pagination
+
+  return result;
 }
