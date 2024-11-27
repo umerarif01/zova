@@ -6,6 +6,8 @@ import ChatbotCard from "./_components/chatbot-card";
 import CreateChatbotDrawer from "./_components/create-chatbot-drawer";
 import UserChatbots from "./_components/user-chatbots";
 import { Suspense } from "react";
+import { auth } from "@/utils/auth";
+import { userDetails } from "@/drizzle/queries/select";
 
 export default async function Dashboard() {
   return (

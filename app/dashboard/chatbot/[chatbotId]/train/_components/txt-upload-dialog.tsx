@@ -66,17 +66,24 @@ export default function TXTUploadDialog() {
 
     try {
       setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("chatbotId", params.chatbotId as string);
-      const data = await uploadToS3(formData);
+      const { uploadUrl, file_key, file_name } = await uploadToS3({
+        fileName: file.name,
+        fileType: file.type,
+        chatbotId: params.chatbotId as string,
+      });
 
-      if (!data?.file_key || !data.file_name) {
+      await axios.put(uploadUrl, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!file_key || !file_name) {
         toast.error("Something went wrong");
         return;
       }
 
-      mutate(data);
+      mutate({ file_key, file_name });
     } catch (error) {
       console.error(error);
       toast.error("Error uploading file");

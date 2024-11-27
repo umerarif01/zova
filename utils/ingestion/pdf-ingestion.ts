@@ -33,11 +33,13 @@ export async function loadPDFIntoPinecone(
   const documents = await Promise.all(pages.map(prepareDocument));
 
   // 4. Vectorize and embed individual documents
-  const vectors = await Promise.all(documents.flat().map(embedDocument));
+  const vectors = await Promise.all(
+    documents.flat().map((doc, index) => embedDocument(doc, sourceKey))
+  );
 
   // 5. Upload to Pinecone
   const client = await getPineconeClient();
-  const pineconeIndex = client.index("zova-02");
+  const pineconeIndex = await client.index(process.env.PINECONE_NAMESPACE!);
   const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
   console.log("Inserting vectors into pinecone");

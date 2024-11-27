@@ -1,25 +1,29 @@
 "use server";
 
-import { S3 } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export async function uploadToS3(
-  formData: FormData
-): Promise<{ file_key: string; file_name: string; chatbotId: string }> {
+export async function uploadToS3({
+  fileName,
+  fileType,
+  chatbotId,
+}: {
+  fileName: string;
+  fileType: string;
+  chatbotId: string;
+}): Promise<{
+  uploadUrl: string;
+  file_key: string;
+  file_name: string;
+  chatbotId: string;
+}> {
   try {
-    const file = formData.get("file") as File;
-    const chatbotId = formData.get("chatbotId") as string;
-
-    if (!(file instanceof File)) {
-      throw new Error("File must be a file");
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const file_key = `${chatbotId}/${Date.now().toString()}-${file.name.replace(
+    const file_key = `${chatbotId}/${Date.now().toString()}-${fileName.replace(
       /\s+/g,
       "-"
     )}`;
 
-    const s3 = new S3({
+    const s3 = new S3Client({
       region: process.env.AWS_S3_REGION!,
       credentials: {
         accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID!,
@@ -27,24 +31,31 @@ export async function uploadToS3(
       },
     });
 
-    await s3.putObject({
+    // Generate a pre-signed URL for uploading the file
+    const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET!,
       Key: file_key,
-      Body: buffer,
+      ContentType: fileType, // Ensure correct MIME type
     });
 
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // URL expires in 1 hour
+
     return {
+      uploadUrl,
       file_key,
-      file_name: file.name,
+      file_name: fileName,
       chatbotId,
     };
   } catch (error) {
-    console.error("Error uploading to S3:", error);
+    console.error("Error generating signed URL:", error);
     throw error;
   }
 }
 
-export async function getS3Url(file_key: string) {
-  const url = `${process.env.AWS_S3_ENDPOINT}/${file_key}`;
-  return url;
+export async function getS3Url(file_key: string): Promise<string> {
+  const s3Endpoint =
+    process.env.AWS_S3_ENDPOINT ||
+    `https://${process.env.AWS_S3_BUCKET!}.s3.${process.env
+      .AWS_S3_REGION!}.amazonaws.com`;
+  return `${s3Endpoint}/${file_key}`;
 }

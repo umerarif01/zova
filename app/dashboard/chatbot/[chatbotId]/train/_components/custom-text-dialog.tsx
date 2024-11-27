@@ -90,7 +90,7 @@ export default function CustomTextDialog() {
           disabled={!text.trim() || isPending}
           variant="custom"
         >
-          {isPending ? "Adding..." : "Submit"}
+          {isPending ? "Adding To Knowledge Base..." : "Submit"}
         </Button>
       </DialogContent>
     </Dialog>

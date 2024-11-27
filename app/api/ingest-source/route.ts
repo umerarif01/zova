@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/utils/auth";
 import { kbSources } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { insertKbSource } from "@/drizzle/queries/insert";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -23,21 +24,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "invalid chatbotId" }, { status: 400 });
     }
 
-    // Create the KB source record
-    const [source] = await db
-      .insert(kbSources)
-      .values({
-        chatbotId,
-        userId: session.user.id,
-        name: file_name || content, // Fallback to content if file_name is null
-        type: type,
-        sourceKey: type === "url" ? content : file_key || "",
-        sourceUrl:
-          type === "url" ? content : file_key ? await getS3Url(file_key) : "",
-        status: "processing",
-      } as typeof kbSources.$inferInsert)
-      .returning();
-
+    const sourceId = await insertKbSource(
+      chatbotId,
+      session.user.id,
+      file_name,
+      type,
+      file_key,
+      file_key,
+      content ?? ""
+    );
     // Process in background based on type
     let processPromise;
     switch (type) {
@@ -53,6 +48,9 @@ export async function POST(req: Request) {
       case "text":
         processPromise = loadTextIntoPinecone(content, chatbotId);
         break;
+      case "txt":
+        processPromise = loadTextIntoPinecone(content, chatbotId);
+        break;
       default:
         throw new Error("Unsupported file type");
     }
@@ -62,17 +60,17 @@ export async function POST(req: Request) {
         await db
           .update(kbSources)
           .set({ status: "completed" })
-          .where(eq(kbSources.id, source.id));
+          .where(eq(kbSources.id, sourceId));
       })
       .catch(async (error) => {
         console.error("Failed to process document:", error);
         await db
           .update(kbSources)
           .set({ status: "failed" })
-          .where(eq(kbSources.id, source.id));
+          .where(eq(kbSources.id, sourceId));
       });
 
-    return NextResponse.json({ sourceId: source.id }, { status: 200 });
+    return NextResponse.json({ sourceId: sourceId }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

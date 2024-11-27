@@ -47,10 +47,9 @@ export default function ContentViewer({ source }: ContentViewerProps) {
 
     case "text":
       return (
-        <div className="w-full h-[90vh] p-6 overflow-auto bg-white">
+        <div className="w-full h-[90vh] p-6 overflow-auto bg-white border rounded-md mx-2">
           <pre className="whitespace-pre-wrap font-sans">
             {source.sourceUrl}{" "}
-            {/* For text type, sourceUrl contains the text content */}
           </pre>
         </div>
       );

@@ -38,7 +38,10 @@ export async function loadURLIntoPinecone(url: string, chatbotId: string) {
 
     // 3. Vectorize and embed
     console.log("creating embeddings");
-    const vectors = await Promise.all(documents.flat().map(embedDocument));
+    // 4. Vectorize and embed individual documents
+    const vectors = await Promise.all(
+      documents.flat().map((doc, index) => embedDocument(doc, url))
+    );
 
     if (vectors.length === 0) {
       throw new Error("No vectors created from the webpage content");
@@ -47,7 +50,7 @@ export async function loadURLIntoPinecone(url: string, chatbotId: string) {
     // 4. Upload to pinecone
     console.log("uploading to pinecone");
     const client = await getPineconeClient();
-    const pineconeIndex = await client.index("zova-02");
+    const pineconeIndex = await client.index(process.env.PINECONE_NAMESPACE!);
     const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
     console.log(`inserting ${vectors.length} vectors into pinecone`);

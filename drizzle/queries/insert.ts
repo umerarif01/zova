@@ -6,11 +6,13 @@ import {
   conversations,
   InsertChatbot,
   InsertConversation,
+  kbSources,
   subscriptions,
 } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
 import { incrementConversationCount } from "@/utils/analytics/update";
+import { getS3Url } from "@/utils/s3";
 import { getUserIdFromChatbot } from "./select";
 
 export async function createChatbot(data: InsertChatbot) {
@@ -21,7 +23,6 @@ export async function createChatbot(data: InsertChatbot) {
     }
 
     const [result] = await db.insert(chatbots).values(data).returning();
-    console.log("result", result);
     if (result?.id) {
       revalidatePath("/dashboard");
       return { success: true, message: "Chatbot created successfully" };
@@ -128,4 +129,74 @@ export async function insertUserSubscription(data: {
     .returning();
 
   return result;
+}
+
+export async function insertKbSource(
+  chatbotId: string,
+  userId: string,
+  name: string,
+  type: "pdf" | "url" | "docx" | "text" | "txt",
+  sourceKey: string,
+  sourceUrl: string,
+  content?: string
+): Promise<string> {
+  if (!["pdf", "url", "docx", "text"].includes(type)) {
+    throw new Error(`Unsupported file type: ${type}`);
+  }
+
+  const commonValues = {
+    chatbotId,
+    userId,
+    name: name,
+    type: type,
+    status: "processing",
+  };
+
+  let insertValues;
+
+  switch (type) {
+    case "pdf":
+      insertValues = {
+        ...commonValues,
+        sourcKey: await getS3Url(sourceKey),
+        sourceUrl,
+      };
+      break;
+    case "url":
+      insertValues = {
+        ...commonValues,
+        sourceKey: content ?? sourceKey,
+        sourceUrl: content ?? sourceUrl,
+      };
+      break;
+    case "txt":
+      insertValues = {
+        ...commonValues,
+        sourcKey: await getS3Url(sourceKey),
+        sourceUrl,
+      };
+    case "docx":
+      insertValues = {
+        ...commonValues,
+        sourcKey: await getS3Url(sourceKey),
+        sourceUrl,
+      };
+    case "text":
+      insertValues = {
+        ...commonValues,
+        sourceKey: content ?? sourceKey,
+        sourceUrl: content ?? sourceUrl,
+      };
+      break;
+    default:
+      throw new Error(`Unhandled file type: ${type}`);
+  }
+
+  // Insert the KB source record
+  const [source] = await db
+    .insert(kbSources)
+    .values(insertValues as typeof kbSources.$inferInsert)
+    .returning();
+
+  return source.id;
 }

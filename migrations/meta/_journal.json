@@ -57,6 +57,13 @@
       "when": 1732623386531,
       "tag": "0007_slimy_rawhide_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1732714001953,
+      "tag": "0008_tidy_scream",
+      "breakpoints": true
     }
   ]
 }

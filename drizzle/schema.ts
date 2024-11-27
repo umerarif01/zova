@@ -140,6 +140,13 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
 export const recentSubscriptions = pgTable("recent_subscriptions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("userId")
@@ -149,16 +156,8 @@ export const recentSubscriptions = pgTable("recent_subscriptions", {
   stripeSubscriptionId: text("stripe_subscription_id").unique(),
   stripeProductId: text("stripe_product_id"),
   planName: varchar("plan_name", { length: 50 }),
-  subscriptionStatus: varchar("subscription_status", { length: 20 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
-
-export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
-  user: one(users, {
-    fields: [subscriptions.userId],
-    references: [users.id],
-  }),
-}));
 
 export const accounts = pgTable(
   "account",

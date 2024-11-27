@@ -33,11 +33,13 @@ export async function loadDocxIntoPinecone(
     );
 
     // 4. Vectorize and embed
-    const vectors = await Promise.all(documents.flat().map(embedDocument));
+    const vectors = await Promise.all(
+      documents.flat().map((doc, index) => embedDocument(doc, sourceKey))
+    );
 
     // 5. Upload to pinecone
     const client = await getPineconeClient();
-    const pineconeIndex = await client.index("zova-02");
+    const pineconeIndex = await client.index(process.env.PINECONE_NAMESPACE!);
     const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
     console.log("inserting vectors into pinecone");

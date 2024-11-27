@@ -1,4 +1,7 @@
-- Add file key to the embedding metadata
-- Complete the chat page
-- Make the data source table's user experience better
-- Make sure all types of data sources are processing correctly
+recent subscriptions
+fix the url in embed.js
+fix the ingesting issues
+fix widget messages storage issue
+move the backend for ingesting
+complete the admin panel
+based on the plan, limit the usage of the chatbots

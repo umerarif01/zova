@@ -12,11 +12,13 @@ export async function loadTextIntoPinecone(text: string, chatbotId: string) {
     });
 
     // 2. Vectorize and embed
-    const vectors = await Promise.all(documents.map(embedDocument));
+    const vectors = await Promise.all(
+      documents.flat().map((doc, index) => embedDocument(doc, text))
+    );
 
     // 3. Upload to pinecone
     const client = await getPineconeClient();
-    const pineconeIndex = await client.index("zova-02");
+    const pineconeIndex = await client.index(process.env.PINECONE_NAMESPACE!);
     const namespace = pineconeIndex.namespace(convertToAscii(chatbotId));
 
     console.log("inserting vectors into pinecone");

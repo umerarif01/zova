@@ -198,7 +198,7 @@ export async function getChatbotByIdWithoutUserId(chatbotId: string) {
       textColor: chatbots.textColor,
     })
     .from(chatbots)
-    .where(and(eq(chatbots.id, chatbotId)));
+    .where(eq(chatbots.id, chatbotId));
 }
 
 export async function getTotalUserCount(searchTerm: string = "") {
@@ -260,5 +260,20 @@ export async function selectAllUsers(
     .limit(pageSize)
     .offset(offset); // Apply offset for pagination
 
+  return result;
+}
+
+export async function userDetails(userId: string) {
+  const result = await db
+    .select({
+      userId: users.id,
+      noOfTokens: users.noOfTokens,
+      noOfChatbots: users.noOfChatbots,
+      noOfKnowledgeSources: users.noOfKnowledgeSources,
+      planName: subscriptions.planName,
+    })
+    .from(users)
+    .leftJoin(subscriptions, eq(users.id, subscriptions.userId))
+    .where(eq(users.id, userId));
   return result;
 }
