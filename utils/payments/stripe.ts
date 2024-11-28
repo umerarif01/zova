@@ -1,4 +1,7 @@
-import { insertUserSubscription } from "@/drizzle/queries/insert";
+import {
+  insertRecentSubscription,
+  insertUserSubscription,
+} from "@/drizzle/queries/insert";
 import {
   getUserSubscriptionByStripeCustomerId,
   getUserSubscriptionByUserId,
@@ -26,6 +29,14 @@ export async function handleCheckoutSessionCompleted(
   const product = await stripe.products.retrieve(
     stripeSubscription.items.data[0]?.price.product as string
   );
+
+  await insertRecentSubscription({
+    userId,
+    stripeCustomerId: customerId,
+    stripeSubscriptionId: subscription,
+    stripeProductId: product.id,
+    planName: product.name,
+  });
 
   if (!userSubscription) {
     await insertUserSubscription({

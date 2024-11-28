@@ -22,8 +22,18 @@ export default function SidebarUsageComponent({ userId }: UsageProps) {
     queryFn: () => userDetails(userId),
   });
 
-  if (error) return <div>Error fetching data</div>;
-  if (!data || data.length === 0) return null;
+  if (error)
+    return (
+      <div className="bg-card p-4 rounded-lg shadow-sm space-y-4 border m-4">
+        An error occured!
+      </div>
+    );
+  if (!data || data.length === 0)
+    return (
+      <div className="bg-card p-4 rounded-lg shadow-sm space-y-4 border m-4">
+        Data not found
+      </div>
+    );
 
   const { noOfChatbots, noOfTokens, noOfKnowledgeSources, planName } = data[0];
 
@@ -83,7 +93,7 @@ export default function SidebarUsageComponent({ userId }: UsageProps) {
   };
 
   return (
-    <div className="bg-card p-6 rounded-lg shadow-sm space-y-4 border m-4">
+    <div className="bg-card p-4 rounded-lg shadow-sm space-y-4 border m-4">
       <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
         Usage Overview
       </h3>

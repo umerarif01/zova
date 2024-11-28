@@ -7,6 +7,7 @@ import {
   InsertChatbot,
   InsertConversation,
   kbSources,
+  recentSubscriptions,
   subscriptions,
 } from "../schema";
 import { db } from "../db";
@@ -199,4 +200,8 @@ export async function insertKbSource(
     .returning();
 
   return source.id;
+}
+
+export async function insertRecentSubscription(data: any) {
+  await db.insert(recentSubscriptions).values(data);
 }
