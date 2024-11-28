@@ -4,6 +4,9 @@ import { useRef, useState, useEffect } from "react";
 import { SendIcon, User, XIcon, Bot, ChevronDown } from "lucide-react";
 import { useChat } from "ai/react";
 import ReactMarkdown from "react-markdown";
+import { useQuery } from "@tanstack/react-query";
+import { getMessages } from "@/drizzle/queries/select";
+import { createConversationWithoutUserId } from "@/drizzle/queries/insert";
 
 interface ChatbotWindowProps {
   embedded?: boolean;
@@ -13,6 +16,65 @@ interface ChatbotWindowProps {
   background?: string;
   textColor?: string;
 }
+
+// Message component
+const Message = ({
+  message,
+  background,
+}: {
+  message: any;
+  background: string;
+}) => (
+  <div
+    className={`flex items-start gap-3 ${
+      message.role === "user" ? "flex-row-reverse ml-12" : "flex-row mr-12"
+    }`}
+  >
+    {message.role === "user" ? (
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center"
+        style={{ backgroundColor: background, color: "white" }}
+      >
+        <User className="w-5 h-5" />
+      </div>
+    ) : (
+      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
+        <Bot className="w-5 h-5" />
+      </div>
+    )}
+    <div
+      className={`p-3 rounded-lg max-w-[80%] ${
+        message.role === "user" ? "" : "bg-gray-200 text-gray-800"
+      }`}
+      style={
+        message.role === "user"
+          ? { backgroundColor: background, color: "white" }
+          : {}
+      }
+    >
+      {message.role === "user" ? (
+        message.content
+      ) : (
+        <ReactMarkdown className="prose prose-sm max-w-none">
+          {message.content}
+        </ReactMarkdown>
+      )}
+    </div>
+  </div>
+);
+
+// Loading indicator component
+const LoadingIndicator = () => (
+  <div className="flex justify-start">
+    <div className="max-w-[80%] rounded-lg px-4 py-2 bg-gray-200 text-gray-800">
+      <div className="flex space-x-2">
+        <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
+        <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
+        <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
+      </div>
+    </div>
+  </div>
+);
 
 export function ChatbotWindow({
   embedded = false,
@@ -24,7 +86,18 @@ export function ChatbotWindow({
 }: ChatbotWindowProps) {
   const messageListRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [data, setData] = useState<any[]>([]);
+  const [chatId, setChatId] = useState("");
+
+  const { data: initialMessages } = useQuery({
+    queryKey: ["chat", chatbotId],
+    queryFn: async () => {
+      const messages: any[] = [];
+      return messages.map((msg) => ({
+        ...msg,
+        role: msg.role as "user" | "system",
+      }));
+    },
+  });
 
   const {
     messages,
@@ -34,14 +107,29 @@ export function ChatbotWindow({
     isLoading,
   } = useChat({
     api: "/api/chat",
-    body: { chatbotId },
-    initialMessages: data || [],
+    body: { chatbotId, chatId },
+    initialMessages: initialMessages || [],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    await originalHandleSubmit(e);
+    if (!input.trim() || !chatbotId) return;
+
+    if (!chatId) {
+      const result = await createConversationWithoutUserId(chatbotId);
+      if (result?.success && result.id) {
+        setChatId(result.id);
+        // Call originalHandleSubmit with updated chatId
+        await originalHandleSubmit(e, {
+          body: { chatbotId, chatId: result.id },
+        });
+        return;
+      }
+    }
+
+    await originalHandleSubmit(e, {
+      body: { chatbotId, chatId },
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -52,12 +140,13 @@ export function ChatbotWindow({
   };
 
   useEffect(() => {
-    if (messageListRef.current) {
-      messageListRef.current.scrollTo({
+    const scrollToBottom = () => {
+      messageListRef.current?.scrollTo({
         top: messageListRef.current.scrollHeight,
         behavior: "smooth",
       });
-    }
+    };
+    scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
@@ -79,12 +168,10 @@ export function ChatbotWindow({
   }, []);
 
   const scrollToBottom = () => {
-    if (messageListRef.current) {
-      messageListRef.current.scrollTo({
-        top: messageListRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
+    messageListRef.current?.scrollTo({
+      top: messageListRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -114,56 +201,14 @@ export function ChatbotWindow({
               </div>
             ) : (
               messages.map((message, index) => (
-                <div
+                <Message
                   key={index}
-                  className={`flex items-start gap-3 ${
-                    message.role === "user" ? "flex-row-reverse" : "flex-row"
-                  } ${message.role === "user" ? "ml-12" : "mr-12"}`}
-                >
-                  {message.role === "user" ? (
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: background, color: textColor }}
-                    >
-                      <User className="w-5 h-5" />
-                    </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
-                      <Bot className="w-5 h-5" />
-                    </div>
-                  )}
-                  <div
-                    className={`p-3 rounded-lg max-w-[80%] ${
-                      message.role === "user" ? "" : "bg-gray-200 text-gray-800"
-                    }`}
-                    style={
-                      message.role === "user"
-                        ? { backgroundColor: background, color: textColor }
-                        : {}
-                    }
-                  >
-                    {message.role === "user" ? (
-                      message.content
-                    ) : (
-                      <ReactMarkdown className="prose prose-sm max-w-none">
-                        {message.content}
-                      </ReactMarkdown>
-                    )}
-                  </div>
-                </div>
+                  message={message}
+                  background={background}
+                />
               ))
             )}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg px-4 py-2 bg-gray-200 text-gray-800">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              </div>
-            )}
+            {isLoading && <LoadingIndicator />}
           </div>
         </div>
       </div>

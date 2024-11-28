@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSourceContext } from "./source-context";
 import ContentViewer from "./content-viewer";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMessages } from "@/drizzle/queries/select";
 
 const PDFViewer = dynamic<{ pdfUrl: string }>(
@@ -38,12 +38,14 @@ const PDFViewer = dynamic<{ pdfUrl: string }>(
 );
 
 interface DocumentClientProps {
+  userId: string;
   userImage?: string;
   chatbotId: string;
   chatId: string;
 }
 
 export default function DocumentClient({
+  userId,
   userImage,
   chatbotId,
   chatId,
@@ -56,6 +58,7 @@ export default function DocumentClient({
   const [error, setError] = useState("");
   const [chatOnlyView, setChatOnlyView] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const queryClient = useQueryClient(); // Get the query client
 
   const { data, isLoading: isLoadingMessages } = useQuery({
     queryKey: ["chat", chatId],
@@ -87,6 +90,10 @@ export default function DocumentClient({
 
     // Call original submit handler
     await originalHandleSubmit(e);
+
+    queryClient.invalidateQueries({
+      queryKey: ["usage", userId],
+    });
   };
 
   const messageListRef = useRef<HTMLDivElement>(null);

@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { DrizzleUser, users } from "@/drizzle/schema";
 import {
   Table,
@@ -18,6 +19,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { UserActionDropdown } from "./user-action-dropdown";
 
 const UsersTable = async ({
   query,
@@ -46,6 +48,7 @@ const UsersTable = async ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Image</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Actions</TableHead>
@@ -54,8 +57,23 @@ const UsersTable = async ({
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
+              <TableCell>
+                <Image
+                  src={user.image || "/placeholder.svg"}
+                  alt={`${user.name}'s avatar`}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              </TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.name}</TableCell>
+              <TableCell>
+                <UserActionDropdown
+                  userId={user.id}
+                  userName={user.name || ""}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

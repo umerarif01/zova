@@ -25,36 +25,35 @@ export default function SidebarUsageComponent({ userId }: UsageProps) {
   if (error)
     return (
       <div className="bg-card p-4 rounded-lg shadow-sm space-y-4 border m-4">
-        An error occured!
-      </div>
-    );
-  if (!data || data.length === 0)
-    return (
-      <div className="bg-card p-4 rounded-lg shadow-sm space-y-4 border m-4">
-        Data not found
+        An error occurred!
       </div>
     );
 
-  const { noOfChatbots, noOfTokens, noOfKnowledgeSources, planName } = data[0];
+  const {
+    noOfChatbots = 0,
+    noOfTokens = 0,
+    noOfKnowledgeSources = 0,
+    planName = null,
+  } = data?.[0] || {};
 
   // Set max values based on plan name
   const MAX_CHATBOTS =
-    planName === "Pro" || planName === "Pro Yearly"
-      ? 10
-      : planName === "Basic Yearly" || planName === "Basic"
+    planName === "Pro Plan" || planName === "Pro Yearly"
       ? 5
+      : planName === "Basic Yearly" || planName === "Basic Plan"
+      ? 3
       : 1;
   const MAX_TOKENS =
-    planName === "Premium" || planName === "Premium Yearly"
-      ? 200000
-      : planName === "Basic Yearly" || planName === "Basic"
-      ? 150000
+    planName === "Pro Plan" || planName === "Pro Yearly"
+      ? 1000000
+      : planName === "Basic Yearly" || planName === "Basic Plan"
+      ? 300000
       : 100000;
   const MAX_KNOWLEDGE_SOURCES =
-    planName === "Premium" || planName === "Premium Yearly"
-      ? 100
-      : planName === "Basic Yearly" || planName === "Basic"
-      ? 75
+    planName === "Pro Plan" || planName === "Pro Yearly"
+      ? 300
+      : planName === "Basic Yearly" || planName === "Basic Plan"
+      ? 150
       : 50;
 
   const calculatePercentage = (value: number, max: number) =>

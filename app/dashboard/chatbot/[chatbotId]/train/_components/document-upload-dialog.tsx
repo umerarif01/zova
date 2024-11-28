@@ -17,12 +17,14 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
 import { uploadToS3 } from "@/utils/s3";
+import { Loader } from "lucide-react";
 
 export default function DocumentUploadDialog() {
   const params = useParams();
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // State to control dialog visibility
 
   const { mutate } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
@@ -36,6 +38,7 @@ export default function DocumentUploadDialog() {
     onSuccess: () => {
       toast.success("Document added to knowledge base!");
       setFile(null);
+      setIsOpen(false); // Close the modal after successful upload
       queryClient.invalidateQueries({
         queryKey: ["sources", params.chatbotId],
       });
@@ -49,6 +52,11 @@ export default function DocumentUploadDialog() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile) {
+      if (selectedFile.size > 4 * 1024 * 1024) {
+        // Limit file size to 4MB
+        toast.error("File size exceeds 4MB limit.");
+        return;
+      }
       setFile(selectedFile);
     } else {
       toast.error("Please select a valid document file.");
@@ -99,7 +107,7 @@ export default function DocumentUploadDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border border-border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-600">
@@ -111,7 +119,7 @@ export default function DocumentUploadDialog() {
               className="w-6 h-6 sm:w-8 sm:h-8 dark:invert transition-transform duration-300 group-hover:scale-110"
             />
             <span className="mt-2 text-xs sm:text-sm font-medium text-foreground">
-              Doc
+              Docx
             </span>
           </div>
         </div>
@@ -146,14 +154,23 @@ export default function DocumentUploadDialog() {
             Supported formats: .doc, .docx, .odt, .rtf
           </p>
         </div>
-        <Button
-          onClick={handleSubmit}
-          className="w-full"
-          disabled={!file || uploading}
-          variant="custom"
-        >
-          {uploading ? "Uploading..." : "Upload"}
-        </Button>
+        <div className="flex flex-col items-center">
+          <Button
+            onClick={handleSubmit}
+            className="w-full"
+            disabled={!file || uploading}
+            variant="custom"
+          >
+            {uploading ? (
+              <>
+                <Loader className="animate-spin w-4 h-4 mr-2" />
+                Uploading Docx...
+              </>
+            ) : (
+              "Upload"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

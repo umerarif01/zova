@@ -51,8 +51,7 @@ export default function TrainPageClient({
             <TXTUploadDialog />
             <CustomTextDialog />
             <DocumentUploadDialog />
-            {/* <SitemapInputDialog />
-            <CSVUploadDialog /> */}
+            <CSVUploadDialog />
           </div>
           <div className="w-full mt-8">
             <div className="flex items-center space-x-2 border-b pb-4">

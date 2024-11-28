@@ -19,7 +19,6 @@ import {
 const chartData = [
   { date: "2024-04-01", totalChats: 372 },
   { date: "2024-04-02", totalChats: 277 },
-  // ... (rest of the data)
   { date: "2024-04-30", totalChats: 834 },
 ];
 
@@ -30,10 +29,14 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TotalChatsChart() {
+interface TotalChatsChartProps {
+  chartData: { date: string; chats: number }[];
+}
+
+export function TotalChatsChart({ chartData }: TotalChatsChartProps) {
   const total = React.useMemo(
-    () => chartData.reduce((acc, curr) => acc + curr.totalChats, 0),
-    []
+    () => chartData.reduce((acc: number, curr) => acc + curr.chats, 0),
+    [chartData]
   );
 
   return (
@@ -99,7 +102,7 @@ export function TotalChatsChart() {
                 />
               }
             />
-            <Bar dataKey="totalChats" fill="var(--color-totalChats)" />
+            <Bar dataKey="chats" fill="var(--color-totalChats)" />
           </BarChart>
         </ChartContainer>
       </CardContent>

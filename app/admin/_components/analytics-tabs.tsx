@@ -3,10 +3,18 @@
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TotalChatsChart } from "./total-chats-chart";
-import { TotalTokensChart } from "./total-tokens-chart";
-import { TotalResponsesChart } from "@/app/dashboard/_components/total-responses";
+import TotalTokensChart from "./total-tokens-chart";
+import { TotalResponsesChart } from "./total-responses-chart";
 
-export function AnalyticsTabs() {
+interface AnalyticsTabsProps {
+  analytics: {
+    conversations: { date: string; chats: number }[];
+    tokens: { date: string; tokens: number }[];
+    responses: { date: string; responses: number }[];
+  };
+}
+
+export function AnalyticsTabs({ analytics }: AnalyticsTabsProps) {
   return (
     <Tabs
       defaultValue="chats"
@@ -24,13 +32,20 @@ export function AnalyticsTabs() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="chats">
-        <TotalChatsChart />
+        <TotalChatsChart chartData={analytics.conversations || []} />
       </TabsContent>
       <TabsContent value="tokens">
-        <TotalTokensChart />
+        <TotalTokensChart chartData={analytics.tokens || []} />
       </TabsContent>
       <TabsContent value="responses">
-        <TotalResponsesChart />
+        <TotalResponsesChart
+          chartData={
+            analytics.responses?.map((item) => ({
+              date: item.date,
+              totalResponses: item.responses,
+            })) || []
+          }
+        />
       </TabsContent>
     </Tabs>
   );

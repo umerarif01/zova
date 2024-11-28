@@ -16,51 +16,27 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { date: "2024-04-01", totalTokens: 15372 },
-  { date: "2024-04-02", totalTokens: 12277 },
-  { date: "2024-04-03", totalTokens: 13287 },
-  { date: "2024-04-04", totalTokens: 18502 },
-  { date: "2024-04-05", totalTokens: 20663 },
-  { date: "2024-04-06", totalTokens: 19641 },
-  { date: "2024-04-07", totalTokens: 17425 },
-  { date: "2024-04-08", totalTokens: 21729 },
-  { date: "2024-04-09", totalTokens: 11169 },
-  { date: "2024-04-10", totalTokens: 16451 },
-  { date: "2024-04-11", totalTokens: 19677 },
-  { date: "2024-04-12", totalTokens: 18502 },
-  { date: "2024-04-13", totalTokens: 20722 },
-  { date: "2024-04-14", totalTokens: 14357 },
-  { date: "2024-04-15", totalTokens: 13290 },
-  { date: "2024-04-16", totalTokens: 14328 },
-  { date: "2024-04-17", totalTokens: 22806 },
-  { date: "2024-04-18", totalTokens: 21774 },
-  { date: "2024-04-19", totalTokens: 17423 },
-  { date: "2024-04-20", totalTokens: 12239 },
-  { date: "2024-04-21", totalTokens: 14337 },
-  { date: "2024-04-22", totalTokens: 15394 },
-  { date: "2024-04-23", totalTokens: 14368 },
-  { date: "2024-04-24", totalTokens: 19677 },
-  { date: "2024-04-25", totalTokens: 17465 },
-  { date: "2024-04-26", totalTokens: 12205 },
-  { date: "2024-04-27", totalTokens: 22803 },
-  { date: "2024-04-28", totalTokens: 14302 },
-  { date: "2024-04-29", totalTokens: 18555 },
-  { date: "2024-04-30", totalTokens: 22834 },
-];
+interface TokenData {
+  date: string;
+  tokens: number;
+}
 
-const chartConfig = {
-  totalTokens: {
-    label: "Total Tokens",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
+interface TotalTokensChartProps {
+  chartData: TokenData[];
+}
 
-export function TotalTokensChart() {
+const TotalTokensChart: React.FC<TotalTokensChartProps> = ({ chartData }) => {
   const total = React.useMemo(
-    () => chartData.reduce((acc, curr) => acc + curr.totalTokens, 0),
-    []
+    () => chartData.reduce((acc, curr) => acc + curr.tokens, 0),
+    [chartData]
   );
+
+  const chartConfig = {
+    totalTokens: {
+      label: "Total Tokens",
+      color: "hsl(var(--chart-2))",
+    },
+  } satisfies ChartConfig;
 
   return (
     <Card>
@@ -114,7 +90,7 @@ export function TotalTokensChart() {
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="totalTokens"
+                  nameKey="tokens"
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
@@ -125,10 +101,12 @@ export function TotalTokensChart() {
                 />
               }
             />
-            <Bar dataKey="totalTokens" fill="var(--color-totalTokens)" />
+            <Bar dataKey="tokens" fill="var(--color-totalTokens)" />
           </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default TotalTokensChart;

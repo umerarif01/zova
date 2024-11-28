@@ -6,14 +6,10 @@ import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/utils/auth";
 
 export async function incrementTokenCount(
+  userId: string,
   chatbotId: string,
   tokenCount: number
 ) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("You must be signed in to use this");
-  }
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -26,7 +22,7 @@ export async function incrementTokenCount(
     .where(
       and(
         eq(tokens.chatbotId, chatbotId),
-        eq(tokens.userId, session.user.id as string),
+        eq(tokens.userId, userId as string),
         eq(tokens.date, today)
       )
     )
@@ -36,19 +32,17 @@ export async function incrementTokenCount(
   if (result.length === 0) {
     await db.insert(tokens).values({
       chatbotId,
-      userId: session.user.id as string,
+      userId: userId as string,
       dailyTokens: tokenCount,
       date: today,
     });
   }
 }
 
-export async function incrementResponseCount(chatbotId: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("You must be signed in to use this");
-  }
-
+export async function incrementResponseCount(
+  userId: string,
+  chatbotId: string
+) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -61,7 +55,7 @@ export async function incrementResponseCount(chatbotId: string) {
     .where(
       and(
         eq(responses.chatbotId, chatbotId),
-        eq(responses.userId, session.user.id as string),
+        eq(responses.userId, userId),
         eq(responses.date, today)
       )
     )
@@ -71,7 +65,7 @@ export async function incrementResponseCount(chatbotId: string) {
   if (result.length === 0) {
     await db.insert(responses).values({
       chatbotId,
-      userId: session.user.id as string,
+      userId: userId as string,
       dailyResponses: 1,
       date: today,
     });

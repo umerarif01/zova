@@ -15,6 +15,7 @@ export default async function IntegrationPage(props: {
 
   const embedCode = `<script>
 window.chatbotId = "${chatbotId}";
+window.zovaUrl = "${process.env.AUTH_URL}";
 </script>
 <script src="${process.env.AUTH_URL}embed.js" defer></script>`;
 

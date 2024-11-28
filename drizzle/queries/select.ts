@@ -25,8 +25,8 @@ export async function getChatbots() {
       id: chatbots.id,
       name: chatbots.name,
       createdAt: chatbots.createdAt,
-      conversationsCount: sql<number>`cast(count(${conversations.id}) as integer)`,
-      sourcesCount: sql<number>`cast(count(${kbSources.id}) as integer)`,
+      conversationsCount: sql<number>`cast(count(distinct ${conversations.id}) as integer)`,
+      sourcesCount: sql<number>`cast(count(distinct ${kbSources.id}) as integer)`,
     })
     .from(chatbots)
     .leftJoin(conversations, eq(conversations.chatbotId, chatbots.id))
@@ -116,7 +116,7 @@ export async function getMessages(chatId: string) {
       .select()
       .from(_messages)
       .where(eq(_messages.conversationId, chatId));
-
+    // .orderBy(asc(_messages.id));
     return messages;
   } catch (error) {
     console.error("Error fetching messages:", error);
@@ -171,8 +171,6 @@ export async function getUserIdFromChatbot(chatbotId: string) {
       })
       .from(chatbots)
       .where(eq(chatbots.id, chatbotId));
-
-    console.log(result);
 
     if (!result.length) {
       throw new Error(`No chatbot found with id: ${chatbotId}`);

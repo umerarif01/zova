@@ -24,7 +24,7 @@ export default async function UsersPage({
   return (
     <div className="flex flex-col justify-center items-start flex-wrap px-4 pt-4 gap-4">
       <h1 className="font-cal text-2xl sm:text-3xl font-bold dark:text-white mb-4 sm:mb-0 border-b-2 pb-2 w-full">
-        Users
+        Manage Users
       </h1>
       <SearchBar placeholder="Search Users" />
 

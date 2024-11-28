@@ -18,7 +18,7 @@ export async function loadPDFIntoPinecone(
   chatbotId: string
 ): Promise<number> {
   // 1. Obtain the pdf -> download and read from pdf
-  console.log("downloading s3 into file system");
+  console.log("Downloading pdf into file system");
   const fileBuffer = await downloadFromS3(sourceKey);
   if (!fileBuffer) {
     throw new Error("could not download from s3");

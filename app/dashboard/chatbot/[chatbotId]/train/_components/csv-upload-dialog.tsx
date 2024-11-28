@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Loader } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { useParams } from "next/navigation";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -22,6 +22,7 @@ export default function CSVUploadDialog() {
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const { mutate } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
@@ -38,6 +39,7 @@ export default function CSVUploadDialog() {
       queryClient.invalidateQueries({
         queryKey: ["sources", params.chatbotId],
       });
+      setIsOpen(false); // Close the modal after successful upload
     },
     onError: (err) => {
       toast.error("Error adding CSV");
@@ -48,6 +50,11 @@ export default function CSVUploadDialog() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile && selectedFile.type === "text/csv") {
+      if (selectedFile.size > 4 * 1024 * 1024) {
+        // Limit file size to 4MB
+        toast.error("File size exceeds 4MB limit.");
+        return;
+      }
       setFile(selectedFile);
     } else {
       toast.error("Please select a CSV file.");
@@ -92,7 +99,7 @@ export default function CSVUploadDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border border-border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-600">
@@ -142,7 +149,14 @@ export default function CSVUploadDialog() {
           disabled={!file || uploading}
           variant="custom"
         >
-          {uploading ? "Uploading..." : "Upload"}
+          {uploading ? (
+            <>
+              <Loader className="animate-spin w-4 h-4 mr-2" />
+              Uploading CSV...
+            </>
+          ) : (
+            "Upload"
+          )}
         </Button>
       </DialogContent>
     </Dialog>

@@ -236,7 +236,7 @@ export default function Pricing() {
       description: "Free forever",
       features: [
         "1 Agent",
-        "25 messages / mo",
+        "100K Tokens / mo",
         "50 sources",
         "GPT-4o-mini AI model",
       ],
@@ -251,7 +251,7 @@ export default function Pricing() {
       description: "For getting started",
       features: [
         "3 Agents",
-        "200 messages / mo",
+        "300K Tokens / mo",
         "150 sources",
         "GPT-4o-mini AI model",
         "GPT-4o AI model",
@@ -270,7 +270,7 @@ export default function Pricing() {
       description: "For more Agents",
       features: [
         "5 Agents",
-        "1000 messages / mo",
+        "1M Tokens / mo",
         "300 sources",
         "GPT-4o-mini AI model ",
         "GPT-4o AI model",

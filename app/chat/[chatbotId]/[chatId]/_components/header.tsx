@@ -18,10 +18,11 @@ import type { Source } from "./source-context";
 import KbSourcesCombobox from "./kb-sources-combobox";
 
 interface HeaderProps {
+  chatbotId: string;
   sources: Source[];
 }
 
-export default function Header({ sources }: HeaderProps) {
+export default function Header({ sources, chatbotId }: HeaderProps) {
   const { setCurrentSource } = useSourceContext();
 
   const handleSourceSelect = (source: Source) => {
@@ -35,7 +36,7 @@ export default function Header({ sources }: HeaderProps) {
         <div className="flex h-16 items-center justify-between px-4 sm:px-8">
           <div className="flex items-center space-x-4">
             <Link
-              href="/dashboard"
+              href={`/dashboard/chatbot/${chatbotId}`}
               className="flex items-center space-x-2 hover:opacity-80"
             >
               <Logo />

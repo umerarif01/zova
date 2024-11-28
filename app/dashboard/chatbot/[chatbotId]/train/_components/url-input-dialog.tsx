@@ -40,8 +40,6 @@ export default function URLInputDialog() {
     },
     onSuccess: () => {
       toast.success("URL added to knowledge base!");
-      setUrls([""]);
-      setIsOpen(false);
       queryClient.invalidateQueries({
         queryKey: ["sources", params.chatbotId],
       });
@@ -75,6 +73,7 @@ export default function URLInputDialog() {
         for (const url of validUrls) {
           await mutate(url);
         }
+        setIsOpen(false); // Close the modal after all URLs have been processed
       } catch (error) {
         console.error("Error processing URLs:", error);
       }
@@ -144,7 +143,7 @@ export default function URLInputDialog() {
           {isPending ? (
             <>
               <Loader className="animate-spin w-4 h-4 mr-2" />
-              Processing...
+              Processing URLs...
             </>
           ) : (
             "Submit"

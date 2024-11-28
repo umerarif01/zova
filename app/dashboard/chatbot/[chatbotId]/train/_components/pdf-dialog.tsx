@@ -52,6 +52,11 @@ export default function PDFUploadDialog() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
+      if (selectedFile.size > 4 * 1024 * 1024) {
+        // Limit file size to 4MB
+        toast.error("File size exceeds 4MB limit.");
+        return;
+      }
       setFile(selectedFile);
     } else {
       toast.error("Please select a PDF file.");
@@ -151,7 +156,7 @@ export default function PDFUploadDialog() {
                   Drag & drop a PDF file here, or click to select
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Maximum file size: 10MB
+                  Maximum file size: 4mb
                 </p>
               </div>
             )}

@@ -21,6 +21,7 @@ export default function CustomTextDialog() {
   const params = useParams();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
+  const [isOpen, setIsOpen] = useState(false); // State to control dialog visibility
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
@@ -38,6 +39,7 @@ export default function CustomTextDialog() {
       queryClient.invalidateQueries({
         queryKey: ["sources", params.chatbotId],
       });
+      setIsOpen(false); // Close the dialog after successful mutation
     },
     onError: (err) => {
       toast.error("Error adding text");
@@ -52,7 +54,7 @@ export default function CustomTextDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border border-border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-600">

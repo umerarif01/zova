@@ -23,6 +23,7 @@ export default function TXTUploadDialog() {
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const { mutate } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
@@ -49,6 +50,11 @@ export default function TXTUploadDialog() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile && selectedFile.type === "text/plain") {
+      if (selectedFile.size > 4 * 1024 * 1024) {
+        // Limit file size to 4MB
+        toast.error("File size exceeds 4MB limit.");
+        return;
+      }
       setFile(selectedFile);
     } else {
       toast.error("Please select a TXT file.");
@@ -83,6 +89,7 @@ export default function TXTUploadDialog() {
         return;
       }
 
+      setIsOpen(false);
       mutate({ file_key, file_name });
     } catch (error) {
       console.error(error);
@@ -93,7 +100,7 @@ export default function TXTUploadDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col items-center cursor-pointer group">
           <div className="size-20 sm:size-24 border border-border rounded-lg flex flex-col items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:border-purple-600">

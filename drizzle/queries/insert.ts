@@ -15,6 +15,7 @@ import { auth } from "@/utils/auth";
 import { incrementConversationCount } from "@/utils/analytics/update";
 import { getS3Url } from "@/utils/s3";
 import { getUserIdFromChatbot } from "./select";
+import { incrementUserChatbotsCount } from "./update";
 
 export async function createChatbot(data: InsertChatbot) {
   try {
@@ -22,6 +23,7 @@ export async function createChatbot(data: InsertChatbot) {
     if (!session?.user) {
       throw new Error("You must be signed in to use this");
     }
+    await incrementUserChatbotsCount(session.user.id);
 
     const [result] = await db.insert(chatbots).values(data).returning();
     if (result?.id) {
@@ -76,8 +78,6 @@ export const createConversation = async ({
 
 export async function createConversationWithoutUserId(chatbotId: string) {
   try {
-    console.log("chatbotId", chatbotId);
-
     const userId = await getUserIdFromChatbot(chatbotId);
 
     if (!userId) {
@@ -136,12 +136,12 @@ export async function insertKbSource(
   chatbotId: string,
   userId: string,
   name: string,
-  type: "pdf" | "url" | "docx" | "text" | "txt",
+  type: "pdf" | "url" | "docx" | "text" | "txt" | "csv",
   sourceKey: string,
   sourceUrl: string,
   content?: string
 ): Promise<string> {
-  if (!["pdf", "url", "docx", "text"].includes(type)) {
+  if (!["pdf", "url", "docx", "text", "txt", "csv"].includes(type)) {
     throw new Error(`Unsupported file type: ${type}`);
   }
 
@@ -159,8 +159,8 @@ export async function insertKbSource(
     case "pdf":
       insertValues = {
         ...commonValues,
-        sourcKey: await getS3Url(sourceKey),
-        sourceUrl,
+        sourceKey,
+        sourceUrl: await getS3Url(sourceKey),
       };
       break;
     case "url":
@@ -173,20 +173,27 @@ export async function insertKbSource(
     case "txt":
       insertValues = {
         ...commonValues,
-        sourcKey: await getS3Url(sourceKey),
-        sourceUrl,
+        sourceKey,
+        sourceUrl: await getS3Url(sourceKey),
       };
     case "docx":
       insertValues = {
         ...commonValues,
-        sourcKey: await getS3Url(sourceKey),
-        sourceUrl,
+        sourceKey,
+        sourceUrl: await getS3Url(sourceKey),
       };
     case "text":
       insertValues = {
         ...commonValues,
         sourceKey: content ?? sourceKey,
         sourceUrl: content ?? sourceUrl,
+      };
+      break;
+    case "csv":
+      insertValues = {
+        ...commonValues,
+        sourceKey,
+        sourceUrl: await getS3Url(sourceKey),
       };
       break;
     default:

@@ -16,39 +16,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { date: "2024-04-01", totalResponses: 342 },
-  { date: "2024-04-02", totalResponses: 257 },
-  { date: "2024-04-03", totalResponses: 267 },
-  { date: "2024-04-04", totalResponses: 482 },
-  { date: "2024-04-05", totalResponses: 633 },
-  { date: "2024-04-06", totalResponses: 611 },
-  { date: "2024-04-07", totalResponses: 405 },
-  { date: "2024-04-08", totalResponses: 699 },
-  { date: "2024-04-09", totalResponses: 159 },
-  { date: "2024-04-10", totalResponses: 431 },
-  { date: "2024-04-11", totalResponses: 647 },
-  { date: "2024-04-12", totalResponses: 482 },
-  { date: "2024-04-13", totalResponses: 692 },
-  { date: "2024-04-14", totalResponses: 337 },
-  { date: "2024-04-15", totalResponses: 270 },
-  { date: "2024-04-16", totalResponses: 308 },
-  { date: "2024-04-17", totalResponses: 776 },
-  { date: "2024-04-18", totalResponses: 744 },
-  { date: "2024-04-19", totalResponses: 403 },
-  { date: "2024-04-20", totalResponses: 219 },
-  { date: "2024-04-21", totalResponses: 317 },
-  { date: "2024-04-22", totalResponses: 374 },
-  { date: "2024-04-23", totalResponses: 348 },
-  { date: "2024-04-24", totalResponses: 647 },
-  { date: "2024-04-25", totalResponses: 445 },
-  { date: "2024-04-26", totalResponses: 195 },
-  { date: "2024-04-27", totalResponses: 773 },
-  { date: "2024-04-28", totalResponses: 282 },
-  { date: "2024-04-29", totalResponses: 525 },
-  { date: "2024-04-30", totalResponses: 804 },
-];
-
 const chartConfig = {
   totalResponses: {
     label: "Total Responses",
@@ -56,10 +23,14 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TotalResponsesChart() {
+interface TotalResponsesChartProps {
+  chartData: { date: string; totalResponses: number }[];
+}
+
+export function TotalResponsesChart({ chartData }: TotalResponsesChartProps) {
   const total = React.useMemo(
-    () => chartData.reduce((acc, curr) => acc + curr.totalResponses, 0),
-    []
+    () => chartData.reduce((acc: number, curr) => acc + curr.totalResponses, 0),
+    [chartData]
   );
 
   return (

@@ -74,7 +74,7 @@
   // Create iframe
   const iframe = document.createElement("iframe");
   iframe.className = "chatbot-widget-iframe";
-  iframe.src = `http://localhost:3000/widget?chatbotId=${window.chatbotId}`;
+  iframe.src = `${window.zovaUrl}widget?chatbotId=${window.chatbotId}`;
 
   container.appendChild(iframe);
 

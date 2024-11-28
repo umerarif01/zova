@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { createChatbot } from "@/drizzle/queries/insert";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { userDetails } from "@/drizzle/queries/select";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateChatbotDrawer() {
   const [chatbotName, setChatbotName] = useState("");
@@ -28,17 +30,22 @@ export default function CreateChatbotDrawer() {
   const [isCreating, setIsCreating] = useState(false);
   const [open, setOpen] = useState(false);
   const session = useSession();
+  const queryClient = useQueryClient(); // Get the query client
 
   const handleSubmit = async () => {
     if (!session.data?.user?.id) return;
 
     try {
       setIsCreating(true);
+      const userId = session.data.user.id;
       const result = await createChatbot({
         name: chatbotName,
-        userId: session.data.user.id,
+        userId,
       });
       if (result.success) {
+        queryClient.invalidateQueries({
+          queryKey: ["usage", userId],
+        });
         toast.success(result.message);
         setOpen(false);
       } else {

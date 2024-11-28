@@ -10,27 +10,15 @@ import {
   incrementTokenCount,
 } from "@/utils/analytics/update";
 import { createConversationWithoutUserId } from "@/drizzle/queries/insert";
+import { incrementUserTokensCount } from "@/drizzle/queries/update";
+import { getUserIdFromChatbot } from "@/drizzle/queries/select";
 
 export const runtime = "edge";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { messages, chatId: initialChatId, chatbotId } = await req.json();
-
-    let chatId = initialChatId;
-
-    if (!chatId) {
-      const result = await createConversationWithoutUserId(chatbotId);
-      if (result?.success && result.id) {
-        chatId = result.id;
-      } else {
-        return NextResponse.json(
-          { error: "An error occurred while processing your request" },
-          { status: 500 }
-        );
-      }
-    }
+    const { messages, chatId, chatbotId } = await req.json();
 
     //Check if chat exists
     const _chats = await db
@@ -81,11 +69,19 @@ export async function POST(req: Request) {
           content: text,
           role: "system",
         });
-        // Update the response count
-        await incrementResponseCount(chatbotId);
+        // Get the userId
+        const userId = await getUserIdFromChatbot(chatbotId);
 
-        // Update the token count
-        await incrementTokenCount(chatbotId, usage.totalTokens);
+        if (!userId) throw new Error("userId not found!");
+
+        // Update the response count
+        await incrementResponseCount(userId, chatbotId);
+
+        // Update the token
+        await incrementTokenCount(userId, chatbotId, usage.totalTokens);
+
+        // Update user token count
+        await incrementUserTokensCount(userId, usage.totalTokens);
       },
     });
 

@@ -32,8 +32,8 @@ export function AnalyticsCharts({ chatbotId }: { chatbotId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex h-[400px] items-center justify-center w-full">
-        <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-[40px] items-center justify-center w-full">
+        <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }

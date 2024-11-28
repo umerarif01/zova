@@ -75,6 +75,34 @@ export default function ContentViewer({ source }: ContentViewerProps) {
         />
       );
 
+    case "csv":
+      return (
+        <iframe
+          src={`https://docs.google.com/gview?url=${encodeURIComponent(
+            source.sourceUrl
+          )}&embedded=true`}
+          width="100%"
+          height="100%"
+          style={{ minHeight: "90vh" }}
+          frameBorder="0"
+          className="bg-white"
+        />
+      );
+
+    case "docx":
+      return (
+        <iframe
+          src={`https://docs.google.com/gview?url=${encodeURIComponent(
+            source.sourceUrl
+          )}`}
+          width="100%"
+          height="100%"
+          style={{ minHeight: "90vh" }}
+          frameBorder="0"
+          className="bg-white"
+        />
+      );
+
     default:
       if (officeFormats.includes(fileExtension)) {
         return (
@@ -83,7 +111,7 @@ export default function ContentViewer({ source }: ContentViewerProps) {
               source.sourceUrl
             )}`}
             width="100%"
-            height="90vh"
+            height="100%" // Changed to full height
             frameBorder="0"
             className="bg-white"
             sandbox="allow-scripts allow-same-origin allow-forms"

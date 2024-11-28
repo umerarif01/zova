@@ -9,6 +9,9 @@ import { auth } from "@/utils/auth";
 import { kbSources } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { insertKbSource } from "@/drizzle/queries/insert";
+import { loadTxtIntoPinecone } from "@/utils/ingestion/txt-ingestion";
+import { incrementUserSourcesCount } from "@/drizzle/queries/update";
+import { loadCSVIntoPinecone } from "@/utils/ingestion/csv-ingestion";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -49,7 +52,10 @@ export async function POST(req: Request) {
         processPromise = loadTextIntoPinecone(content, chatbotId);
         break;
       case "txt":
-        processPromise = loadTextIntoPinecone(content, chatbotId);
+        processPromise = loadTxtIntoPinecone(file_key, chatbotId);
+        break;
+      case "csv":
+        processPromise = loadCSVIntoPinecone(file_key, chatbotId);
         break;
       default:
         throw new Error("Unsupported file type");
@@ -61,6 +67,7 @@ export async function POST(req: Request) {
           .update(kbSources)
           .set({ status: "completed" })
           .where(eq(kbSources.id, sourceId));
+        await incrementUserSourcesCount(session.user.id);
       })
       .catch(async (error) => {
         console.error("Failed to process document:", error);
