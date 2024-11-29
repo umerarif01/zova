@@ -106,7 +106,7 @@ export async function getKbSourcesForChatPage(chatbotId: string) {
 
   try {
     const sources = await db
-            .select({
+        .select({
         id: kbSources.id,
         name: kbSources.name,
         type: kbSources.type,
@@ -122,7 +122,6 @@ export async function getKbSourcesForChatPage(chatbotId: string) {
           eq(kbSources.userId, session?.user?.id as string)
         )
       );
-    revalidatePath(`/dashboard/chatbot/${chatbotId}/train`);
     return sources;
   } catch (error) {
     console.error("Error fetching KB sources:", error);
