@@ -104,6 +104,9 @@ export default function DocumentUploadDialog() {
       }
 
       mutate({ file_key, file_name });
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
     } catch (error) {
       console.error(error);
       toast.error("Error uploading file");

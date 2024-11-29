@@ -56,6 +56,9 @@ export default function CustomTextDialog() {
   const handleSubmit = () => {
     if (text.trim()) {
       mutate();
+      queryClient.invalidateQueries({
+        queryKey: ["sources", params.chatbotId],
+      });
     }
   };
 

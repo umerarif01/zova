@@ -80,6 +80,10 @@ export default function URLInputDialog() {
           await mutate(url);
         }
         setIsOpen(false); // Close the modal after all URLs have been processed
+
+        queryClient.invalidateQueries({
+          queryKey: ["sources", params.chatbotId],
+        });
       } catch (error) {
         console.error("Error processing URLs:", error);
       }
