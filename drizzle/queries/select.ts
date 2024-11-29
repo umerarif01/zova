@@ -12,6 +12,7 @@ import {
 } from "../schema";
 import { db } from "../db";
 import { auth } from "@/utils/auth";
+import { revalidatePath } from "next/cache";
 
 export async function getChatbots() {
   const session = await auth();
@@ -80,23 +81,15 @@ export async function getKbSources(chatbotId: string) {
 
   try {
     const sources = await db
-      .select({
-        id: kbSources.id,
-        name: kbSources.name,
-        type: kbSources.type,
-        sourceUrl: kbSources.sourceUrl,
-        chatbotId: kbSources.chatbotId,
-        userId: kbSources.userId,
-        createdAt: kbSources.createdAt,
-      })
+      .select()
       .from(kbSources)
       .where(
         and(
           eq(kbSources.chatbotId, chatbotId),
-          eq(kbSources.userId, session.user.id as string)
+          eq(kbSources.userId, session?.user?.id as string)
         )
       );
-
+    revalidatePath(`/dashboard/chatbot/${chatbotId}/train`);
     return sources;
   } catch (error) {
     console.error("Error fetching KB sources:", error);

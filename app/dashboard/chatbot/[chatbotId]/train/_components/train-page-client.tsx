@@ -8,11 +8,11 @@ import URLInputDialog from "./url-input-dialog";
 import TXTUploadDialog from "./txt-upload-dialog";
 import CustomTextDialog from "./custom-text-dialog";
 import DocumentUploadDialog from "./document-upload-dialog";
-import SitemapInputDialog from "./sitemap-input-dialog";
 import CSVUploadDialog from "./csv-upload-dialog";
 import { columns } from "./columns";
 import { DataTableWithFeatures } from "./data-table-with-features";
 import { KBSource } from "@/types/kb-source";
+import { getKbSources } from "@/drizzle/queries/select";
 
 export default function TrainPageClient({
   params,
@@ -22,10 +22,8 @@ export default function TrainPageClient({
   const { data: sources = [], isLoading } = useQuery({
     queryKey: ["sources", params.chatbotId],
     queryFn: async () => {
-      const response = await axios.get(
-        `/api/sources?chatbotId=${params.chatbotId}`
-      );
-      return response.data;
+      const sources = await getKbSources(params.chatbotId);
+      return sources;
     },
   });
 
@@ -69,9 +67,8 @@ export default function TrainPageClient({
                 {sources.length > 0 ? (
                   <>
                     {
-                      sources.filter(
-                        (source: KBSource) => source.status === "completed"
-                      ).length
+                      sources.filter((source) => source.status === "completed")
+                        .length
                     }{" "}
                     of {sources.length} data sources completed
                   </>
@@ -81,7 +78,10 @@ export default function TrainPageClient({
               </span>
             </div>
 
-            <DataTableWithFeatures<KBSource> columns={columns} data={sources} />
+            <DataTableWithFeatures<KBSource>
+              columns={columns}
+              data={sources as KBSource[]}
+            />
           </div>
         </>
       )}
