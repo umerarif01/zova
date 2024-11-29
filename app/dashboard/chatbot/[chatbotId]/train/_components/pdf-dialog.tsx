@@ -18,6 +18,7 @@ import axios from "axios";
 import { uploadToS3 } from "@/utils/s3";
 import Image from "next/image";
 import PdfIcon from "@/public/pdf-2.png";
+import { useSession } from "next-auth/react";
 
 export default function PDFUploadDialog() {
   const params = useParams();
@@ -25,14 +26,19 @@ export default function PDFUploadDialog() {
   const [file, setFile] = useState<File | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const session = useSession();
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
-      const response = await axios.post("/api/ingest-source", {
-        ...data,
-        type: "pdf",
-        chatbotId: params.chatbotId,
-      });
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_ZOVA_INGEST_BACKEND!,
+        {
+          ...data,
+          type: "pdf",
+          userId: session.data?.user.id,
+          chatbotId: params.chatbotId,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {

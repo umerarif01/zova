@@ -17,12 +17,14 @@ import { useParams } from "next/navigation";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 export default function URLInputDialog() {
   const params = useParams();
   const queryClient = useQueryClient();
   const [urls, setUrls] = useState<string[]>([""]);
   const [isOpen, setIsOpen] = useState(false);
+  const session = useSession();
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (url: string) => {
@@ -30,12 +32,16 @@ export default function URLInputDialog() {
         url = "https://" + url;
       }
 
-      const response = await axios.post("/api/ingest-source", {
-        type: "url",
-        content: url,
-        file_name: new URL(url).hostname,
-        chatbotId: params.chatbotId,
-      });
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_ZOVA_INGEST_BACKEND!,
+        {
+          type: "url",
+          content: url,
+          userId: session.data?.user.id,
+          file_name: new URL(url).hostname,
+          chatbotId: params.chatbotId,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {

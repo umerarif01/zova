@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { uploadToS3 } from "@/utils/s3";
 import { Loader } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function DocumentUploadDialog() {
   const params = useParams();
@@ -25,14 +26,19 @@ export default function DocumentUploadDialog() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isOpen, setIsOpen] = useState(false); // State to control dialog visibility
+  const session = useSession();
 
   const { mutate } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
-      const response = await axios.post("/api/ingest-source", {
-        ...data,
-        type: "docx",
-        chatbotId: params.chatbotId,
-      });
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_ZOVA_INGEST_BACKEND!,
+        {
+          ...data,
+          type: "docx",
+          userId: session.data?.user.id,
+          chatbotId: params.chatbotId,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {

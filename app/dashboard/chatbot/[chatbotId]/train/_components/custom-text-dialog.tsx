@@ -16,21 +16,27 @@ import { useParams } from "next/navigation";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 export default function CustomTextDialog() {
   const params = useParams();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [isOpen, setIsOpen] = useState(false); // State to control dialog visibility
+  const session = useSession();
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      const response = await axios.post("/api/ingest-source", {
-        type: "text",
-        content: text,
-        file_name: "Custom Text",
-        chatbotId: params.chatbotId,
-      });
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_ZOVA_INGEST_BACKEND!,
+        {
+          type: "text",
+          content: text,
+          file_name: "Custom Text",
+          userId: session.data?.user.id,
+          chatbotId: params.chatbotId,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
