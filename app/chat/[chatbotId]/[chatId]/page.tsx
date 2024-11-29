@@ -2,7 +2,7 @@ import DocumentClient from "./_components/chat-client";
 import Header from "./_components/header";
 import { auth } from "@/utils/auth";
 import UserIcon from "@/public/user-icon.webp";
-import { getKbSources } from "@/drizzle/queries/select";
+import { getKbSourcesForChatPage } from "@/drizzle/queries/select";
 import type { Source } from "./_components/source-context";
 import { SourceProvider } from "./_components/source-context";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export default async function Page(props: {
 }) {
   const params = await props.params;
   const session = await auth();
-  const sources = await getKbSources(params.chatbotId);
+  const sources = await getKbSourcesForChatPage(params.chatbotId);
 
   if (!sources || sources.length === 0) {
     return (

@@ -97,6 +97,39 @@ export async function getKbSources(chatbotId: string) {
   }
 }
 
+export async function getKbSourcesForChatPage(chatbotId: string) {
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error("You must be signed in to use this");
+  }
+
+  try {
+    const sources = await db
+            .select({
+        id: kbSources.id,
+        name: kbSources.name,
+        type: kbSources.type,
+        sourceUrl: kbSources.sourceUrl,
+        chatbotId: kbSources.chatbotId,
+        userId: kbSources.userId,
+        createdAt: kbSources.createdAt,
+      })
+      .from(kbSources)
+      .where(
+        and(
+          eq(kbSources.chatbotId, chatbotId),
+          eq(kbSources.userId, session?.user?.id as string)
+        )
+      );
+    revalidatePath(`/dashboard/chatbot/${chatbotId}/train`);
+    return sources;
+  } catch (error) {
+    console.error("Error fetching KB sources:", error);
+    return [];
+  }
+}
+
 export async function getMessages(chatId: string) {
   const session = await auth();
 
