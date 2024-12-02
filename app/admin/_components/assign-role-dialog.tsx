@@ -35,15 +35,15 @@ export function AssignRoleDialog({
 
     setIsLoading(true);
     try {
-      const result = await updateUserRole(userId, selectedRole);
+      const formData = new FormData();
+      formData.append("userId", userId);
+      formData.append("selectedRole", selectedRole);
+      const result = await updateUserRole(formData);
 
       if (result) {
         onOpenChange(false);
         setSelectedRole(null);
-        toast.success("Role assigned successfully!");
-      } else {
-        console.error("Failed to assign role");
-        toast.error("Failed to assign role");
+        toast.success(result.message);
       }
     } catch (error) {
       console.error("Error assigning role:", error);

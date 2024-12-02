@@ -22,6 +22,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserDetails } from "@/drizzle/queries/admin";
+import UserIcon from "@/public/user-icon.webp";
+import Image from "next/image";
 
 interface UserDetailsDialogProps {
   userId: string;
@@ -66,7 +68,14 @@ export function UserDetailsDialog({
               <div className="flex flex-col items-center mb-6">
                 <Avatar className="w-24 h-24 mb-4">
                   {user?.image ? (
-                    <img src={user.image} alt={user.name || "User"} />
+                    <Image
+                      src={user.image || UserIcon}
+                      alt="User Profile"
+                      width={100}
+                      height={100}
+                      className="object-cover rounded-full"
+                      priority
+                    />
                   ) : (
                     <AvatarFallback>{user?.name?.[0] || "U"}</AvatarFallback>
                   )}

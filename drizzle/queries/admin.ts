@@ -144,17 +144,28 @@ export const getUserDetails = async (userId: string) => {
   return userDetailsResult[0]; // Return the first result
 };
 
-export async function updateUserRole(userId: string, newRole: string) {
+export async function updateUserRole(formData: FormData) {
   const session = await auth(); // Assuming you have a function to get the session
 
   if (!session || session.user.role !== "admin") {
     throw new Error("You must be an admin to update user roles");
   }
 
+  const userId = formData.get("userId") as string;
+  const selectedRole = formData.get("selectedRole") as string;
+
+  if (!userId || !selectedRole) {
+    throw new Error("User ID and selected role must be provided");
+  }
+
   const updateResult = await db
     .update(users)
-    .set({ role: newRole })
+    .set({ role: selectedRole })
     .where(eq(users.id, userId));
 
-  return updateResult;
+  if (updateResult) {
+    return { message: "User role updated successfully" };
+  } else {
+    throw new Error("Failed to update user role");
+  }
 }
