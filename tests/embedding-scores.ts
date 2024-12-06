@@ -4,7 +4,7 @@ import { getEmbeddings } from "@/utils/embeddings";
 
 async function testEmbeddingScores() {
   try {
-    const testQueries = ["What is DataSciMI?", "What are imporant dates?"];
+    const testQueries = ["What is DataSciMI?", "What are important dates?"];
 
     // This chatbot is trained using data from the following URL: https://datasci.world/.
     // The purpose of this test is to evaluate the embedding scores for various queries.
