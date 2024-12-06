@@ -10,7 +10,8 @@
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "db:gen": "drizzle-kit generate",
-    "stripe:listen": "stripe listen --forward-to http://localhost:3000/api/payments/webhook"
+    "stripe:listen": "stripe listen --forward-to http://localhost:3000/api/payments/webhook",
+    "tests:score": "tsx ./tests/embedding-scores.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.1",
@@ -70,7 +71,7 @@
     "crypto": "^1.0.1",
     "d3-dsv": "^2.0.0",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.33.0",
     "encoding": "^0.1.13",
     "framer-motion": "^11.11.1",
@@ -119,6 +120,7 @@
     "eslint-config-next": "latest",
     "postcss": "latest",
     "tailwindcss": "^3.3.5",
+    "tsx": "^4.17.0",
     "typescript": "latest"
   },
   "overrides": {
