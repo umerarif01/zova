@@ -127,6 +127,9 @@
     "tsx": "^4.17.0",
     "typescript": "latest"
   },
+  "browser": {
+    "crypto": false
+  },
   "overrides": {
     "react-is": "^19.0.0-rc-69d4b800-20241021"
   }

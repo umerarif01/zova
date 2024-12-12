@@ -1,5 +1,5 @@
-import NextAuth from "next-auth";
-import { db, eq } from "@/drizzle/db";
+import NextAuth, { User, type NextAuthConfig } from "next-auth";
+import { db } from "@/drizzle/db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import {
   accounts,
@@ -9,11 +9,12 @@ import {
 } from "@/drizzle/schema";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { ZodError } from "zod";
-import { signInSchema } from "@/lib/validations/auth";
-// import { saltAndHashPassword, verifyPassword } from "@/lib/utils/auth-utils";
+import { encode as defaultEncode } from "next-auth/jwt";
+import { v4 as uuid } from "uuid";
+import { getUserFromDb } from "@/lib/actions/auth";
+import { createSession } from "@/drizzle/queries/insert";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/sign-in",
   },
@@ -28,50 +29,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: {},
+        password: {},
       },
-      // authorize: async (credentials) => {
-      //   try {
-      //     const { email, password } = credentials as {
-      //       email: string;
-      //       password: string;
-      //     };
+      async authorize(credentials) {
+        const { email, password } = credentials;
 
-      //     if (!email || !password) {
-      //       return null;
-      //     }
+        const res = await getUserFromDb(email as string, password as string);
+        if (res.success) {
+          return res.data as User;
+        }
 
-      //     const [user] = await db
-      //       .select()
-      //       .from(users)
-      //       .where(eq(users.email, email))
-      //       .limit(1);
-
-      //     if (!user || !user.password) {
-      //       return null;
-      //     }
-
-      //     const isValid = await verifyPassword(password, user.password);
-
-      //     if (!isValid) {
-      //       return null;
-      //     }
-
-      //     return {
-      //       id: user.id,
-      //       name: user.name,
-      //       email: user.email,
-      //       image: user.image,
-      //       role: user.role || undefined,
-      //       banned: user.banned,
-      //     };
-      //   } catch (error) {
-      //     return null;
-      //   }
-      // },
+        return null;
+      },
     }),
     Google({
+      clientId: process.env.AUTH_GOOGLE_ID as string,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET as string,
       profile(profile) {
         return {
           id: profile.sub,
@@ -100,10 +74,48 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
     session({ session, user }) {
-      session.user.id = user.id;
-      session.user.role = user.role;
-      session.user.banned = user.banned;
+      if (user) {
+        session.user.id = user.id;
+        session.user.role = user.role;
+        session.user.banned = user.banned;
+      }
       return session;
     },
+    async jwt({ token, user, account }) {
+      if (account?.provider === "credentials") {
+        token.credentials = true;
+      }
+      if (user) {
+        token.role = user.role;
+        token.banned = user.banned;
+      }
+      return token;
+    },
   },
-});
+  jwt: {
+    encode: async function (params) {
+      if (params.token?.credentials) {
+        const sessionToken = uuid();
+
+        if (!params.token.sub) {
+          throw new Error("No user ID found in token");
+        }
+
+        const session = await createSession({
+          sessionToken: sessionToken,
+          userId: params.token.sub,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        });
+
+        if (!session) {
+          throw new Error("Failed to create session");
+        }
+
+        return sessionToken;
+      }
+      return defaultEncode(params);
+    },
+  },
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);

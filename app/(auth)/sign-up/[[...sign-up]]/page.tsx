@@ -1,25 +1,81 @@
-import PageWrapper from "@/components/wrapper/page-wrapper";
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RegisterSchema } from "@/lib/validations/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { register } from "@/lib/actions/auth";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
+import GoogleButton from "../../_components/google-button";
+import PageWrapper from "@/components/wrapper/page-wrapper";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import Link from "next/link";
-import { GoogleButton } from "../../_components/google-button";
-import { signInWithGoogle } from "@/lib/actions/sign-in";
-import { signUpAction } from "@/lib/actions/auth";
-import { SubmitButton } from "../../_components/submit-button";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  async function onSubmit(data: z.infer<typeof RegisterSchema>) {
+    try {
+      setIsLoading(true);
+      const res = await register(data);
+      if (res.success) {
+        toast({
+          description: "Account created successfully",
+        });
+        router.replace("/sign-in");
+      } else {
+        toast({
+          description: res.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        description: "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <PageWrapper>
-      <div className="flex min-w-screen justify-center my-[5rem]">
+      <div className="flex min-w-screen justify-center my-[5rem] mx-4">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+            <CardTitle className="text-3xl font-bold">
               Create an account
             </CardTitle>
             <CardDescription>
@@ -28,35 +84,91 @@ export default function SignUpPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <form action={signUpAction} className="space-y-4">
-                <div className="space-y-2">
-                  <Input
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
                     name="name"
-                    type="text"
-                    placeholder="Enter your name"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
+
+                  <FormField
+                    control={form.control}
                     name="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
+
+                  <FormField
+                    control={form.control}
                     name="password"
-                    type="password"
-                    placeholder="Enter a password"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Enter your password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
+
+                  <FormField
+                    control={form.control}
                     name="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    required
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <SubmitButton>Sign Up</SubmitButton>
-              </form>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      "Sign up"
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -69,11 +181,9 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              <form action={signInWithGoogle}>
-                <GoogleButton />
-              </form>
+              <GoogleButton label="Sign up with Google" />
 
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-gray-500">
                 By clicking continue, you agree to our{" "}
                 <Link href="#" className="underline">
                   Terms of Service
@@ -90,7 +200,7 @@ export default function SignUpPage() {
                   href="/sign-in"
                   className="text-purple-600 hover:underline"
                 >
-                  Sign In
+                  Sign in
                 </Link>
               </div>
             </div>

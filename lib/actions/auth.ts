@@ -9,109 +9,152 @@ import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { Resend } from "resend";
 import { ResetPasswordEmail } from "../email/reset-password";
+import bcryptjs from "bcryptjs";
+import { revalidatePath } from "next/cache";
+import { LoginSchema, RegisterSchema } from "../validations/auth";
+import { z } from "zod";
+import { hash } from "bcryptjs";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-export async function signUpAction(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const name = formData.get("name") as string;
+export async function getUserFromDb(email: string, password: string) {
+  try {
+    const existedUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
 
-  const existingUser = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+    if (!existedUser) {
+      return {
+        success: false,
+        message: "User not found.",
+      };
+    }
 
-  if (existingUser.length > 0) {
-    return { error: "User already exists" };
+    if (!existedUser[0].password) {
+      return {
+        success: false,
+        message: "Password is required.",
+      };
+    }
+
+    const isPasswordMatches = await bcryptjs.compare(
+      password,
+      existedUser[0].password
+    );
+
+    if (!isPasswordMatches) {
+      return {
+        success: false,
+        message: "Password is incorrect.",
+      };
+    }
+
+    return {
+      success: true,
+      data: existedUser[0],
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message,
+    };
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  await db.insert(users).values({
-    email,
-    name,
-    password: hashedPassword,
-    role: "user",
-    image: "/user-icon.webp",
-    noOfKnowledgeSources: 0,
-    noOfChatbots: 0,
-    noOfTokens: 0,
-  });
-
-  await signIn("credentials", {
-    email,
-    password,
-    redirect: true,
-    callbackUrl: "/dashboard",
-  });
-
-  redirect("/dashboard");
 }
 
-export async function forgotPasswordAction(formData: FormData) {
-  const email = formData.get("email") as string;
+export async function login({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
+  try {
+    LoginSchema.parse({
+      email,
+      password,
+    });
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+    const formData = new FormData();
 
-  if (!user) {
-    return { error: "User not found" };
+    formData.append("email", email);
+    formData.append("password", password);
+
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Email or password is incorrect.",
+    };
   }
-
-  const token = uuidv4();
-  const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
-
-  await db.insert(verificationTokens).values({
-    identifier: user.email!,
-    token,
-    expires,
-  });
-
-  const resetLink = `${process.env.AUTH_URL}/reset-password?token=${token}`;
-
-  await resend.emails.send({
-    from: "Zova.chat <onboarding@resend.dev>",
-    to: [user.email || ""],
-    subject: "Reset your password",
-    react: ResetPasswordEmail({ resetLink }),
-  });
-
-  return { success: "Reset link sent to your email" };
 }
 
-export async function resetPasswordAction(token: string, formData: FormData) {
-  const password = formData.get("password") as string;
-  const confirmPassword = formData.get("confirmPassword") as string;
+export async function register({
+  name,
+  email,
+  password,
+  confirmPassword,
+}: {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  try {
+    RegisterSchema.parse({
+      name,
+      email,
+      password,
+      confirmPassword,
+    });
+    // get user from db
+    const existedUser = await getUserFromDb(email, password);
+    if (existedUser.success) {
+      return {
+        success: false,
+        message: "User already exists.",
+      };
+    }
+    const hash = await bcryptjs.hash(password, 10);
 
-  if (password !== confirmPassword) {
-    return { error: "Passwords do not match" };
+    const [insertedUser] = await db
+      .insert(users)
+      .values({
+        name,
+        email,
+        password: hash,
+        image: "/user-icon.webp",
+      })
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+      });
+
+    return {
+      success: true,
+      data: insertedUser,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message,
+    };
   }
+}
 
-  const [verificationToken] = await db
-    .select()
-    .from(verificationTokens)
-    .where(eq(verificationTokens.token, token))
-    .limit(1);
-
-  if (!verificationToken || verificationToken.expires < new Date()) {
-    return { error: "Invalid or expired token" };
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  await db
-    .update(users)
-    .set({ password: hashedPassword })
-    .where(eq(users.email, verificationToken.identifier));
-
-  await db
-    .delete(verificationTokens)
-    .where(eq(verificationTokens.token, token));
-
-  return { success: "Password updated successfully" };
+export async function loginWithGoogle() {
+  await signIn("google", {
+    redirectTo: "/dashboard",
+  });
 }

@@ -1,9 +1,10 @@
 "use server";
 
 import { auth } from "@/utils/auth";
-import { db, eq } from "../db";
+import { db } from "../db";
 import { conversations } from "../schema";
 import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 
 export async function deleteChat(chatId: string) {
   const session = await auth();

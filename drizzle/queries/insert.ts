@@ -8,6 +8,7 @@ import {
   InsertConversation,
   kbSources,
   recentSubscriptions,
+  sessions,
   subscriptions,
 } from "../schema";
 import { db } from "../db";
@@ -211,4 +212,30 @@ export async function insertKbSource(
 
 export async function insertRecentSubscription(data: any) {
   await db.insert(recentSubscriptions).values(data);
+}
+
+export async function createSession({
+  sessionToken,
+  userId,
+  expires,
+}: {
+  sessionToken: string;
+  userId: string;
+  expires: Date;
+}) {
+  try {
+    const [session] = await db
+      .insert(sessions)
+      .values({
+        sessionToken,
+        userId,
+        expires,
+      })
+      .returning();
+
+    return session;
+  } catch (error) {
+    console.error("Error creating session:", error);
+    return null;
+  }
 }

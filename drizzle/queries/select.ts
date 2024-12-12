@@ -106,7 +106,7 @@ export async function getKbSourcesForChatPage(chatbotId: string) {
 
   try {
     const sources = await db
-        .select({
+      .select({
         id: kbSources.id,
         name: kbSources.name,
         type: kbSources.type,
