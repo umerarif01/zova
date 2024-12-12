@@ -97,7 +97,7 @@ export function BanUserDialog({
           className="grid gap-4 pt-4"
         >
           <div>
-            <RadioGroupItem value="ban" id="ban" className="peer sr-only" />
+            <RadioGroupItem value="true" id="ban" className="peer sr-only" />
             <Label
               htmlFor="ban"
               className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
@@ -107,7 +107,7 @@ export function BanUserDialog({
             </Label>
           </div>
           <div>
-            <RadioGroupItem value="unban" id="unban" className="peer sr-only" />
+            <RadioGroupItem value="false" id="unban" className="peer sr-only" />
             <Label
               htmlFor="unban"
               className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
@@ -130,20 +130,10 @@ export function BanUserDialog({
             variant={banOption === "false" ? "default" : "destructive"}
             onClick={handleUpdateBanStatus}
             disabled={isUpdating || banOption === null}
-            className={cn(
-              "relative",
-              isUpdating &&
-                "text-transparent transition-colors hover:text-transparent"
-            )}
           >
-            <span
-              className={cn(
-                "absolute inset-0 flex items-center justify-center",
-                !isUpdating && "hidden"
-              )}
-            >
-              <span className="animate-spin">
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
+            {isUpdating ? (
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -159,15 +149,11 @@ export function BanUserDialog({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
+                {banOption === "true" ? "Banning User..." : "Unbanning User..."}
               </span>
-            </span>
-            {isUpdating
-              ? banOption === "true"
-                ? "Banning User..."
-                : "Unbanning User..."
-              : banOption === "true"
-                ? "Ban User"
-                : "Unban User"}
+            ) : (
+              <span>{banOption === "true" ? "Ban User" : "Unban User"}</span>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

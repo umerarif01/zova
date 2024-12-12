@@ -177,7 +177,7 @@ export async function updateUserRole(formData: FormData) {
 }
 
 export async function banUser(userId: string, banOption: string) {
-  const session = await auth(); // Assuming you have a function to get the session
+  const session = await auth();
 
   if (!session || session.user.role !== "admin") {
     throw new Error("You must be an admin to ban user");
@@ -189,10 +189,11 @@ export async function banUser(userId: string, banOption: string) {
 
   const updateResult = await db
     .update(users)
-    .set({ banned: banOption == "true" ? true : false })
+    .set({ banned: banOption === "true" })
     .where(eq(users.id, userId));
 
   if (updateResult) {
+    revalidatePath("/admin");
     return { message: "User banned successfully" };
   } else {
     throw new Error("Failed to ban user");
