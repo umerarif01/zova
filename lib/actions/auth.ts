@@ -134,6 +134,7 @@ export async function register({
         email,
         password: hash,
         image: "/user-icon.webp",
+        role: "user",
       })
       .returning({
         id: users.id,
