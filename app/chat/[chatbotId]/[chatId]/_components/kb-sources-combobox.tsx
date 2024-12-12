@@ -45,9 +45,9 @@ export default function KbSourcesCombobox({
           {selectedValue
             ? sources
                 .find((source) => source.id === selectedValue)
-                ?.name?.slice(0, 20) +
-              (sources.find((source) => source.id === selectedValue)?.name
-                ?.length ?? 0 > 20
+                ?.name?.slice(0, 14) +
+              ((sources.find((source) => source.id === selectedValue)?.name
+                ?.length ?? 0 > 20)
                 ? "..."
                 : "")
             : "Select source..."}

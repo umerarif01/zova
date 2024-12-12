@@ -190,3 +190,16 @@ export async function incrementUserSourcesCount(userId: string) {
     .set({ noOfKnowledgeSources: sql`${users.noOfKnowledgeSources} + 1` })
     .where(eq(users.id, userId));
 }
+
+export async function updateTokens(userId: string) {
+  const session = await auth();
+
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  await db
+    .update(users)
+    .set({ noOfTokens: sql`${users.noOfTokens} + 1000` })
+    .where(eq(users.id, userId));
+}

@@ -15,7 +15,12 @@ import {
 import { auth } from "@/utils/auth";
 import { and, count } from "drizzle-orm";
 import { desc } from "drizzle-orm";
-import { eq, gte, sql } from "drizzle-orm";
+import { eq, gte, sql, or, ilike } from "drizzle-orm";
+import { Resend } from "resend";
+import SourceDeleted from "@/components/emails/source-deleted";
+import { revalidatePath } from "next/cache";
+
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function getAdminDashboardStats() {
   const session = await auth(); // Assuming you have a function to get the session
@@ -136,6 +141,7 @@ export const getUserDetails = async (userId: string) => {
       noOfKnowledgeSources: users.noOfKnowledgeSources,
       noOfChatbots: users.noOfChatbots,
       planName: subscriptions.planName,
+      banned: users.banned,
     })
     .from(users)
     .leftJoin(subscriptions, eq(users.id, subscriptions.userId))
@@ -168,4 +174,130 @@ export async function updateUserRole(formData: FormData) {
   } else {
     throw new Error("Failed to update user role");
   }
+}
+
+export async function banUser(userId: string, banOption: string) {
+  const session = await auth(); // Assuming you have a function to get the session
+
+  if (!session || session.user.role !== "admin") {
+    throw new Error("You must be an admin to ban user");
+  }
+
+  if (!userId) {
+    throw new Error("User ID must be provided");
+  }
+
+  const updateResult = await db
+    .update(users)
+    .set({ banned: banOption == "true" ? true : false })
+    .where(eq(users.id, userId));
+
+  if (updateResult) {
+    return { message: "User banned successfully" };
+  } else {
+    throw new Error("Failed to ban user");
+  }
+}
+
+export async function getKnowledgeSources(
+  userId: string,
+  query: string = "",
+  page: number = 1,
+  pageSize: number = 10
+) {
+  const session = await auth();
+
+  if (!session || session.user.role !== "admin") {
+    throw new Error("You must be an admin to access sources");
+  }
+
+  if (!userId) {
+    throw new Error("User ID must be provided");
+  }
+
+  const offset = (page - 1) * pageSize;
+
+  const sources = await db
+    .select()
+    .from(kbSources)
+    .where(
+      and(
+        eq(kbSources.userId, userId),
+        query
+          ? or(
+              ilike(kbSources.name, `%${query}%`),
+              ilike(kbSources.type, `%${query}%`)
+            )
+          : undefined
+      )
+    )
+    .limit(pageSize)
+    .offset(offset)
+    .orderBy(desc(kbSources.createdAt));
+
+  const totalSources = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(kbSources)
+    .where(
+      and(
+        eq(kbSources.userId, userId),
+        query
+          ? or(
+              ilike(kbSources.name, `%${query}%`),
+              ilike(kbSources.type, `%${query}%`)
+            )
+          : undefined
+      )
+    );
+
+  return {
+    sources,
+    totalSources: Number(totalSources[0].count),
+  };
+}
+
+export async function deleteSource(
+  sourceId: string,
+  sendEmail: boolean = false
+) {
+  const session = await auth();
+
+  if (!session || session.user.role !== "admin") {
+    throw new Error("You must be an admin to delete sources");
+  }
+
+  // Get source details before deletion
+  const [source] = await db
+    .select()
+    .from(kbSources)
+    .where(eq(kbSources.id, sourceId));
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, source.userId));
+
+  if (!source) {
+    throw new Error("Source not found");
+  }
+
+  // Delete the source
+  await db.delete(kbSources).where(eq(kbSources.id, sourceId));
+
+  // Send email if requested and email is available
+  if (sendEmail && user.email) {
+    await resend.emails.send({
+      from: "Zova.chat <onboarding@resend.dev>",
+      to: [user.email || ""],
+      subject: "Knowledge Source Deleted",
+      react: SourceDeleted({
+        firstName: user.name || "",
+        sourceName: source.name || "",
+      }),
+    });
+  }
+
+  revalidatePath("");
+
+  return { success: true };
 }

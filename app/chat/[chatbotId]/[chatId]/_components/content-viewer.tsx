@@ -103,6 +103,17 @@ export default function ContentViewer({ source }: ContentViewerProps) {
         />
       );
 
+    case "img":
+      return (
+        <div className="w-full h-[90vh] flex items-center justify-center bg-gray-100">
+          <img
+            src={source.sourceUrl}
+            alt="Uploaded content"
+            className="max-h-full max-w-full"
+          />
+        </div>
+      );
+
     default:
       if (officeFormats.includes(fileExtension)) {
         return (
@@ -111,11 +122,10 @@ export default function ContentViewer({ source }: ContentViewerProps) {
               source.sourceUrl
             )}`}
             width="100%"
-            height="100%" // Changed to full height
+            height="100%"
+            style={{ minHeight: "90vh" }}
             frameBorder="0"
             className="bg-white"
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            title="Office document viewer"
           />
         );
       }

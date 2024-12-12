@@ -5,7 +5,7 @@ import React, { forwardRef, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { AnimatedBeam } from "../ui/animated-beam";
 import Image from "next/image";
-import { Type } from "lucide-react";
+import { Type, User } from "lucide-react";
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -15,7 +15,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex size-14 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        "z-10 flex size-14 items-center justify-center rounded-full border-2 border-border bg-white dark:bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] transition-colors p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
         className
       )}
     >
@@ -327,18 +327,5 @@ const Icons = {
       className="h-7 w-5"
     />
   ),
-  user: () => (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#000000"
-      strokeWidth="2"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  ),
+  user: () => <User />,
 };

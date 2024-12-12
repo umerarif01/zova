@@ -10,6 +10,8 @@ import {
   Coins,
   Database,
   CreditCard,
+  Ban,
+  UserX,
 } from "lucide-react";
 import {
   Dialog,
@@ -21,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { getUserDetails } from "@/drizzle/queries/admin";
 import UserIcon from "@/public/user-icon.webp";
 import Image from "next/image";
@@ -41,6 +44,7 @@ interface UserDetails {
   noOfKnowledgeSources: number | null;
   noOfChatbots: number | null;
   planName: string | null;
+  banned: boolean;
 }
 
 export function UserDetailsDialog({
@@ -53,6 +57,30 @@ export function UserDetailsDialog({
     queryFn: () => getUserDetails(userId),
     enabled: open,
   });
+
+  const getMaxValues = (planName: string | null) => {
+    const MAX_CHATBOTS =
+      planName === "Pro Plan" || planName === "Pro Yearly"
+        ? 5
+        : planName === "Basic Yearly" || planName === "Basic Plan"
+        ? 3
+        : 1;
+    const MAX_TOKENS =
+      planName === "Pro Plan" || planName === "Pro Yearly"
+        ? 1000000
+        : planName === "Basic Yearly" || planName === "Basic Plan"
+        ? 300000
+        : 100000;
+    const MAX_KNOWLEDGE_SOURCES =
+      planName === "Pro Plan" || planName === "Pro Yearly"
+        ? 300
+        : planName === "Basic Yearly" || planName === "Basic Plan"
+        ? 150
+        : 50;
+    return { MAX_CHATBOTS, MAX_TOKENS, MAX_KNOWLEDGE_SOURCES };
+  };
+
+  const maxValues = getMaxValues(user?.planName || "free");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,9 +111,17 @@ export function UserDetailsDialog({
                 <h2 className="text-2xl font-semibold">
                   {user?.name || "N/A"}
                 </h2>
-                <Badge variant="secondary" className="mt-2">
-                  {user?.role || "N/A"}
-                </Badge>
+                <div className="flex gap-2 mt-2">
+                  <Badge variant="secondary">{user?.role || "N/A"}</Badge>
+                  {user?.banned && (
+                    <Badge
+                      variant="destructive"
+                      className="flex items-center gap-1"
+                    >
+                      <Ban className="w-3 h-3" /> Banned
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="space-y-4">
                 <DetailItem
@@ -96,22 +132,42 @@ export function UserDetailsDialog({
                 <DetailItem
                   icon={MessageSquare}
                   label="Chatbots"
-                  value={user?.noOfChatbots ?? "N/A"}
+                  value={`${user?.noOfChatbots ?? 0} / ${
+                    maxValues.MAX_CHATBOTS
+                  }`}
+                  progress={
+                    ((user?.noOfChatbots ?? 0) / maxValues.MAX_CHATBOTS) * 100
+                  }
                 />
                 <DetailItem
                   icon={Coins}
                   label="Tokens"
-                  value={user?.noOfTokens ?? "N/A"}
+                  value={`${user?.noOfTokens ?? 0} / ${maxValues.MAX_TOKENS}`}
+                  progress={
+                    ((user?.noOfTokens ?? 0) / maxValues.MAX_TOKENS) * 100
+                  }
                 />
                 <DetailItem
                   icon={Database}
                   label="Knowledge Sources"
-                  value={user?.noOfKnowledgeSources ?? "N/A"}
+                  value={`${user?.noOfKnowledgeSources ?? 0} / ${
+                    maxValues.MAX_KNOWLEDGE_SOURCES
+                  }`}
+                  progress={
+                    ((user?.noOfKnowledgeSources ?? 0) /
+                      maxValues.MAX_KNOWLEDGE_SOURCES) *
+                    100
+                  }
                 />
                 <DetailItem
                   icon={CreditCard}
                   label="Plan"
                   value={user?.planName ?? "N/A"}
+                />
+                <DetailItem
+                  icon={UserX}
+                  label="Ban Status"
+                  value={user?.banned == true ? "True" : "False"}
                 />
               </div>
             </CardContent>
@@ -126,17 +182,22 @@ function DetailItem({
   icon: Icon,
   label,
   value,
+  progress,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number | null;
+  progress?: number;
 }) {
   return (
     <div className="flex items-center space-x-4">
       <Icon className="w-5 h-5 text-muted-foreground" />
-      <div className="space-y-1">
+      <div className="space-y-1 flex-1">
         <p className="text-sm font-medium leading-none">{label}</p>
         <p className="text-sm text-muted-foreground">{value ?? "N/A"}</p>
+        {progress !== undefined && (
+          <Progress value={progress} className="h-1 mt-2" />
+        )}
       </div>
     </div>
   );

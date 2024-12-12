@@ -5,9 +5,11 @@ declare module "next-auth" {
     user: {
       id: string;
       role?: string;
+      banned?: boolean; // Added banned attribute
     } & DefaultSession["user"];
   }
   interface User {
     role?: string;
+    banned?: boolean; // Added banned attribute
   }
 }

@@ -118,6 +118,8 @@ export const users = pgTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
   email: text("email").unique(),
+  password: text("password"),
+  banned: boolean("banned").notNull().default(false),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   role: text("role"),
@@ -196,7 +198,7 @@ export const verificationTokens = pgTable(
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+    expires: timestamp("expires").notNull(),
   },
   (verificationToken) => ({
     compositePk: primaryKey({

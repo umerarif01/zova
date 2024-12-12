@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, User, Shield, Eye, UserCog } from "lucide-react";
+import {
+  MoreHorizontal,
+  User,
+  Shield,
+  Eye,
+  UserCog,
+  StickyNote,
+} from "lucide-react";
 import { UserDetailsDialog } from "./user-details-dialog";
 import { AssignRoleDialog } from "./assign-role-dialog";
 import {
@@ -19,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BanUserDialog } from "./ban-user-dialog";
 
 interface UserActionDropdownProps {
   userId: string;
@@ -31,7 +40,9 @@ export function UserActionDropdown({
 }: UserActionDropdownProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
+  const [isBanOpen, setIsBanOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
 
   const handleDetailsClick = () => {
     setIsDetailsOpen(true);
@@ -41,6 +52,15 @@ export function UserActionDropdown({
   const handleRoleClick = () => {
     setIsRoleOpen(true);
     setDropdownOpen(false);
+  };
+
+  const handleBanUserClick = () => {
+    setIsBanOpen(true);
+    setDropdownOpen(false);
+  };
+
+  const handleViewKnowledgeSources = () => {
+    router.push(`/admin/users/${userId}?userName=${userName}`);
   };
 
   return (
@@ -65,6 +85,14 @@ export function UserActionDropdown({
                 <DropdownMenuItem onSelect={handleRoleClick}>
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Assign role</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleBanUserClick}>
+                  <UserCog className="mr-2 h-4 w-4" />
+                  <span>Ban user</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleViewKnowledgeSources}>
+                  <StickyNote className="mr-2 h-4 w-4" />
+                  <span>View Sources</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

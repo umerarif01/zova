@@ -27,10 +27,24 @@ export default function SignInPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <form className="space-y-4">
+              <form
+                className="space-y-4"
+                action={async (formData) => {
+                  "use server";
+                  await signIn("credentials", formData);
+                }}
+              >
                 <div className="space-y-2">
-                  <Input type="email" placeholder="Enter your email address" />
-                  <Input type="password" placeholder="Enter your password" />
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                  />
+                  <Input
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                  />
                 </div>
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                   Sign Up

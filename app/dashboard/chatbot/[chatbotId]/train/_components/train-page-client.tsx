@@ -13,6 +13,9 @@ import { columns } from "./columns";
 import { DataTableWithFeatures } from "./data-table-with-features";
 import { KBSource } from "@/types/kb-source";
 import { getKbSources } from "@/drizzle/queries/select";
+import ImageUploadDialog from "./image-upload-dialog";
+import PPTXUploadDialog from "./pptx-upload-dialog";
+import YoutubeInputDialog from "./youtube-input-dialog";
 
 export default function TrainPageClient({
   params,
@@ -50,6 +53,9 @@ export default function TrainPageClient({
             <CustomTextDialog />
             <DocumentUploadDialog />
             <CSVUploadDialog />
+            <PPTXUploadDialog />
+            <ImageUploadDialog />
+            {/* <YoutubeInputDialog /> */}
           </div>
           <div className="w-full mt-8">
             <div className="flex items-center space-x-2 border-b pb-4">
