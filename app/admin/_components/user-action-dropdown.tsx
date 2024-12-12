@@ -112,6 +112,12 @@ export function UserActionDropdown({
         open={isRoleOpen}
         onOpenChange={setIsRoleOpen}
       />
+      <BanUserDialog
+        userId={userId}
+        username={userName}
+        open={isBanOpen}
+        onOpenChange={setIsBanOpen}
+      />
     </>
   );
 }

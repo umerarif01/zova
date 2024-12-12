@@ -52,25 +52,12 @@ export function AccordionComponent() {
           <AccordionContent>
             <p>
               {
-                "Absolutely. We implement industry-leading security and encryption standards to ensure your data remains private and protected."
+                "Absolutely. We implement industry-leading security standards to ensure your data remains private and protected."
               }
             </p>
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="item-4">
-          <AccordionTrigger>
-            <span className="font-medium">
-              {"Can the chatbot handle multiple languages?"}
-            </span>
-          </AccordionTrigger>
-          <AccordionContent>
-            <p>
-              {
-                "Yes, our chatbot supports multiple languages, allowing you to engage with a global audience in their preferred language."
-              }
-            </p>
-          </AccordionContent>
-        </AccordionItem>
+
         <AccordionItem value="item-5">
           <AccordionTrigger>
             <span className="font-medium">
@@ -94,7 +81,7 @@ export function AccordionComponent() {
           <AccordionContent>
             <p>
               {
-                "Our platform provides detailed analytics, including response times, user engagement, conversation success rates, and more."
+                "Our platform provides detailed analytics, which includes the total number of responses, the number of conversations, and the number of tokens used."
               }
             </p>
           </AccordionContent>

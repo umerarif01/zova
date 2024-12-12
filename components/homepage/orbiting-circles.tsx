@@ -7,7 +7,7 @@ export function OrbitingCirclesComponent() {
   return (
     <div className="relative flex h-[500px] w-full max-w-[32rem] items-center justify-center overflow-hidden rounded-lg">
       <span className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-purple-400/80 bg-clip-text text-center text-6xl font-semibold leading-none text-transparent dark:from-white dark:to-purple-900/60">
-        Train Agents
+        Train Chatbots
       </span>
 
       {/* Inner Circles */}

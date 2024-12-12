@@ -5,15 +5,15 @@ import { TITLE_TAILWIND_CLASS } from "@/utils/constants";
 
 const features = [
   {
-    name: "Build and Deploy Tailored Agents.",
+    name: "Build and Deploy Tailored Chatbots.",
     description:
-      "Easily create and deploy intelligent agents trained on your specific data sources such as PDFs, Word documents, and websites.",
+      "Easily create and deploy intelligent chatbots trained on your specific data sources such as PDFs, Word documents, and websites.",
     icon: FaRobot,
   },
   {
     name: "Leverage Your Data.",
     description:
-      "Empower your agents to retrieve relevant information from diverse data formats, providing accurate and tailored insights.",
+      "Empower your chatbots to retrieve relevant information from diverse data formats, providing accurate and tailored insights.",
     icon: Database,
   },
   {
@@ -34,10 +34,10 @@ export default function SideBySide() {
               <p
                 className={`${TITLE_TAILWIND_CLASS} mt-2 font-semibold tracking-tight dark:text-white text-gray-900`}
               >
-                Build and Deploy Tailored Data-Powered Agents
+                Build and Deploy Tailored Data-Powered Chatbots
               </p>
               <p className="mt-6 leading-8 text-gray-600 dark:text-gray-400">
-                Train your agents on any data source and deploy them for
+                Train your chatbots on any data source and deploy them for
                 real-time, accurate insights.
               </p>
               <dl className="mt-10 max-w-xl space-y-8 leading-7 text-gray-600 lg:max-w-none">

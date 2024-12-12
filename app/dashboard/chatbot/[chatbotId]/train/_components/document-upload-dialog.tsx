@@ -30,6 +30,8 @@ export default function DocumentUploadDialog() {
 
   const { mutate } = useMutation({
     mutationFn: async (data: { file_key: string; file_name: string }) => {
+      console.log("data", data);
+
       const response = await axios.post(
         process.env.NEXT_PUBLIC_ZOVA_INGEST_BACKEND!,
         {

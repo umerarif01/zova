@@ -23,12 +23,12 @@ export default function HeroSection() {
         </AnimatedShinyText>
       </div>
       <h1
-        className={`text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl max-w-[550px] sm:max-w-[650px] md:max-w-[750px] scroll-m-20 font-semibold tracking-tight text-center`}
+        className={`text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl max-w-[560px] sm:max-w-[660px] md:max-w-[760px] scroll-m-20 font-semibold tracking-tight text-center`}
       >
-        Build and Deploy Tailored Agents Powered by Your Data
+        Build and Deploy Tailored Chatbots Powered by Your Data
       </h1>
       <p className="mx-auto max-w-[90%] sm:max-w-[80%] md:max-w-[700px] text-gray-500 text-center mt-4 text-sm sm:text-base dark:text-gray-400">
-        Train agents using your PDFs, Word documents, websites, and more.
+        Train chatbots using your PDFs, Word documents, websites, and more.
         Empower them to deliver accurate, data-driven insights tailored to your
         needs.
       </p>

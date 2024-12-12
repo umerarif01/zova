@@ -10,7 +10,7 @@ export default async function RecentSubscriptions() {
   const subscriptions = await getRecentSubscriptions();
 
   return (
-    <Card className="w-full">
+    <Card className="w-full col-span-2">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-medium">
           Recent Subscriptions

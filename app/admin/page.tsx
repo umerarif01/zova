@@ -54,7 +54,7 @@ export default async function AdminPage() {
         </div>
       </Suspense>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 w-full">
         <Suspense
           fallback={
             <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />
@@ -64,7 +64,7 @@ export default async function AdminPage() {
         </Suspense>
         <Suspense
           fallback={
-            <div className="h-96 bg-gray-100 animate-pulse rounded-lg md:col-span-3" />
+            <div className="h-96 bg-gray-100 animate-pulse rounded-lg " />
           }
         >
           <RecentSubscriptions />

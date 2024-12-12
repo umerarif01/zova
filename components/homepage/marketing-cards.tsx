@@ -46,17 +46,17 @@ const FeaturesData = [
   },
   {
     id: 5,
-    name: "Multilingual",
+    name: "Integration",
     description:
-      "Multiple language support allows your agent to converse with users in their preferred language, enabling you to reach a wider audience.",
+      "Easily integrate our chatbot into your website using a simple script tag for seamless functionality.",
     icon: Globe2,
-    url: "#",
+    url: "#", // Replace with actual integration URL
   },
   {
     id: 6,
-    name: "Encrypted and Secure",
+    name: "Secure",
     description:
-      "Industry-leading data privacy and security policies to protect user data, giving peace of mind.",
+      "Your data is only accessible to you and not given to any third parties, giving you peace of mind.",
     icon: ShieldCheck,
     url: "#",
   },
@@ -69,7 +69,7 @@ const SpringAnimatedFeatures = () => {
         <h2
           className={`${TITLE_TAILWIND_CLASS} mt-2 font-semibold tracking-tight dark:text-white text-gray-900 text-center`}
         >
-          See How Our AI Agents Can Benefit You
+          See How Our AI Chatbots Can Benefit You
         </h2>
         <p className="mx-auto max-w-[500px] text-gray-600 dark:text-gray-400 text-center mt-2 text-sm sm:text-base">
           {`We've built a platform that is easy to use and has all the features
