@@ -94,7 +94,7 @@ export default function ContentViewer({ source }: ContentViewerProps) {
         <iframe
           src={`https://docs.google.com/gview?url=${encodeURIComponent(
             source.sourceUrl
-          )}`}
+          )}&embedded=true`}
           width="100%"
           height="100%"
           style={{ minHeight: "90vh" }}
@@ -111,6 +111,15 @@ export default function ContentViewer({ source }: ContentViewerProps) {
             alt="Uploaded content"
             className="max-h-full max-w-full"
           />
+        </div>
+      );
+
+    case "txt":
+      return (
+        <div className="w-full h-[90vh] p-6 overflow-auto bg-white border rounded-md mx-2">
+          <pre className="whitespace-pre-wrap font-sans">
+            {source.sourceUrl}
+          </pre>
         </div>
       );
 
