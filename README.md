@@ -1,17 +1,20 @@
 # Zova
 
-Zova is SaaS platform that leverages the Retrieval-Augmented Generation (RAG) framework, allowing users to create multi-source chatbots. These chatbots are capable of retrieving facts from diverse sources, including PDFs, Word documents, and websites, enhancing LLM performance and reliability.
+Zova is SaaS platform that leverages the Retrieval-Augmented Generation (RAG) framework, allowing users to create multi-source chatbots. These chatbots are capable of retrieving facts from diverse sources, including PDFs, Word documents, websites and more, enhancing LLM performance and reliability. Additionally, Zova makes it easy to integrate these chatbots into your own websites with simple script tags.
+
+![Zova](./public/screenshot.png)
 
 ## Features
 
 - **Next.js Framework**: Fast and modern React-based framework for building server-side rendering and static web applications.
-- **Database Management**: Integrated with Drizzle ORM for seamless database operations.
-- **Authentication**: Utilizes NextAuth.js for secure and flexible authentication solutions.
+- **Langchain**: Utilizes Langchain for RAG framework.
+- **Pinecone**: Utilizes Pinecone for vector database.
+- **Database Management**: Integrated with Drizzle ORM and Neon for seamless database operations.
+- **Authentication**: Utilizes Auth.js for secure and flexible authentication solutions.
 - **Payment Integration**: Integrated with Stripe for handling payments and webhooks.
-- **Drag-and-Drop**: Enhanced user experience with drag-and-drop functionality using DnD Kit.
 - **AWS S3**: Utilizes AWS SDK for S3 storage solutions.
-- **PDF Viewing and Parsing**: Supports PDF viewing and parsing with React PDF Viewer and PDF.js.
-- **Email Handling**: Built-in email components using React Email.
+- **Resend**: Utilizes Resend for email solutions.
+- **UI**: Utilizes Shadcn/UI, Magic/UI, Lucide Icons and Tailwind CSS for UI components.
 
 ## Installation
 
@@ -53,7 +56,7 @@ Zova is SaaS platform that leverages the Retrieval-Augmented Generation (RAG) fr
 
 6. Run the ingest backend:
 
-   clone the ingest backend from [here](https://github.com/umerarif01/zova-backend) and run it.
+   clone the ingest backend from [here](https://github.com/umerarif01/zova-backend) and follow the instructions to run it.
 
 ## Contributing
 
