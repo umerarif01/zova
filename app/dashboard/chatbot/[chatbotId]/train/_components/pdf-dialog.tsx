@@ -58,7 +58,7 @@ export default function PDFUploadDialog() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
-      if (selectedFile.size > 4 * 1024 * 1024) {
+      if (selectedFile.size > 6 * 1024 * 1024) {
         // Limit file size to 4MB
         toast.error("File size exceeds 4MB limit.");
         return;
