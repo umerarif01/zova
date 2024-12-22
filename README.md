@@ -56,7 +56,7 @@ Zova is SaaS platform that leverages the Retrieval-Augmented Generation (RAG) fr
 
 6. Run the ingest backend:
 
-   clone the ingest backend from [here](https://github.com/umerarif01/zova-backend) and follow the instructions to run it.
+   Clone the ingest backend from [here](https://github.com/umerarif01/zova-backend) and follow the instructions to run it.
 
 ## Contributing
 
